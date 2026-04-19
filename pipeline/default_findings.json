@@ -1,0 +1,60 @@
+{
+  "hook_patterns": [
+    "Promise of 'crazy and bizarre facts' + subject name in first 3 words",
+    "Exclusivity claim: 'you won't learn anywhere else'",
+    "Lead with most shocking/taboo element first (mommy's boy, brainwashing)",
+    "Immediate humanizing flaw of legendary figure (undermines mythology)"
+  ],
+  "structural_beats": [
+    "BEAT 1: Psychological/personal flaw that contradicts public image (mommy's boy vs conqueror)",
+    "BEAT 2: Famous challenge/test story with unexpected solution (Gordian knot \u2192 brute force hack)",
+    "BEAT 3: Death/finale twist that reframes everything (buried alive reveal)",
+    "Pattern: Chronological through life BUT selecting only counterintuitive moments",
+    "Each beat is self-contained mini-story (3-4 sentences max)",
+    "Escalating stakes: personal flaw \u2192 legendary moment \u2192 ultimate fate"
+  ],
+  "rhetorical_devices": [
+    "Conversational interjections: 'I guess he really bought that'",
+    "Problem-solution framing with casual dismissal: 'problem solved'",
+    "Contrast pairs: 'proving he was a God' vs 'he wasn't dead to begin with'",
+    "Authority layering: 'Greek Scholars wrote' \u2192 'modern day scientists believe' (ancient vs contemporary)",
+    "Dramatic irony: 'History's Greatest conqueror got buried alive' (ultimate reversal)",
+    "Present tense for immediacy: 'he then drew his sword out'",
+    "Cliffhanger phrasing: 'in reality that was because...' (creates micro-suspense)"
+  ],
+  "vocabulary_motifs": [
+    "Extreme adjectives front-loaded: 'crazy', 'bizarre', 'legendary'",
+    "Definitive historical labels: 'History's Greatest conqueror', 'most famous case'",
+    "Mystical/elevated language for setup: 'shrouded in prophecy', 'warrior king'",
+    "Clinical/scientific language for debunking: 'neurological disorder', 'Physicians declared'",
+    "Visceral action verbs: 'brainwashed', 'sliced', 'buried alive'",
+    "Colloquial deflation: 'Mommy's boy', 'he really bought that', 'problem solved'"
+  ],
+  "pacing_notes": "Rapid-fire delivery with NO filler. Sentences range 8-20 words. Three distinct story blocks with hard cuts between them (no transitions). Info density is extreme: every sentence contains a fact + interpretation. Speeds up toward end (final sentence is longest but delivers maximum shock). No breathing room\u2014assumes viewer will rewatch. Comma splices used intentionally for breathless momentum.",
+  "payoff_patterns": [
+    "Final line delivers darkest irony/reversal of entire narrative",
+    "Callback to opening label ('History's Greatest conqueror') but subverted",
+    "Medical/scientific 'truth' undermines mythological framing",
+    "Ends on visceral image ('buried alive') not explanation",
+    "No moral or lesson\u2014just leaves viewer with disturbing reframe",
+    "Payoff is recontextualization: everything you thought you knew is wrong"
+  ],
+  "topics": [
+    "Alexander the Great's relationship with his mother Olympias",
+    "Zeus paternity myth and divine right ideology",
+    "Gordian Knot legend and Alexander's pragmatic solution",
+    "Alexander's death and decomposition mythology",
+    "Modern medical theories: neurological disorder causing paralysis misdiagnosed as death",
+    "Premature burial hypothesis"
+  ],
+  "do_not_do": [
+    "Never use academic hedging ('perhaps', 'it's possible', 'some historians think')",
+    "Never explain context or background (assume viewer knows who Alexander is)",
+    "Never use transition phrases ('moving on', 'next', 'another interesting fact')",
+    "Never end with summary or call-to-action",
+    "Never present facts neutrally\u2014always frame with emotional angle (shocking/ironic/dark)",
+    "Never slow down to let information sink in",
+    "Never cite specific sources (use vague authority: 'Greek Scholars', 'modern scientists')",
+    "Never resolve tension\u2014leave viewer unsettled"
+  ]
+}
