@@ -1,0 +1,79 @@
+name: Daily Shorts
+
+on:
+  schedule:
+    # Turkey time = UTC+3. 10:00 TR = 07:00 UTC, 14:00 TR = 11:00 UTC, 19:00 TR = 16:00 UTC.
+    - cron: "0 7 * * *"
+    - cron: "0 11 * * *"
+    - cron: "0 16 * * *"
+  workflow_dispatch:        # allows manual trigger from the Actions tab
+
+concurrency:
+  group: shorts
+  cancel-in-progress: false
+
+jobs:
+  produce:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+      ELEVENLABS_VOICE_ID: ${{ secrets.ELEVENLABS_VOICE_ID }}
+      ELEVENLABS_VOICE_ID_SECONDARY: ""
+      NICHE: history
+      LANGUAGE: English
+      TARGET_VIEWS: 1000000
+      YOUTUBE_CLIENT_SECRET_PATH: client_secret.json
+      YOUTUBE_TOKEN_PATH: token.json
+      YOUTUBE_PRIVACY: public
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Python deps
+        run: pip install -r requirements.txt
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install npm deps
+        run: npm ci || npm install
+
+      - name: Install Chrome for Remotion
+        run: npx remotion browser ensure
+
+      - name: Restore OAuth secrets to disk
+        env:
+          GOOGLE_CLIENT_SECRET_JSON: ${{ secrets.GOOGLE_CLIENT_SECRET_JSON }}
+          GOOGLE_TOKEN_JSON: ${{ secrets.GOOGLE_TOKEN_JSON }}
+        run: |
+          printf '%s' "$GOOGLE_CLIENT_SECRET_JSON" > client_secret.json
+          printf '%s' "$GOOGLE_TOKEN_JSON" > token.json
+          python -c "import json; json.load(open('client_secret.json')); json.load(open('token.json')); print('secrets OK')"
+
+      - name: Run pipeline
+        run: python main.py --urls-file urls.txt
+
+      - name: Upload artifacts for debugging
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: run-${{ github.run_id }}
+          path: |
+            workspace/*/short.mp4
+            workspace/*/script.json
+            workspace/*/title.json
+            workspace/*/subtitles.json
+            workspace/*/youtube_url.txt
+          if-no-files-found: ignore
+          retention-days: 7

@@ -1,0 +1,29 @@
+node_modules
+.DS_Store
+.env
+.claude/
+out
+build
+dist
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Secrets
+client_secret.json
+client_secret_*.json
+token.json
+*.token.json
+
+# Generated / large runtime assets
+workspace/
+public/voice.mp3
+public/subtitles.json
+public/images/
+public/*.mp4
+public/*.webm
+public/*.mp3
+props.json
