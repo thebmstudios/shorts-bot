@@ -2,10 +2,13 @@ name: Daily Shorts
 
 on:
   schedule:
-    # Turkey time = UTC+3. 10:00 TR = 07:00 UTC, 14:00 TR = 11:00 UTC, 19:00 TR = 16:00 UTC.
-    - cron: "0 7 * * *"
-    - cron: "0 11 * * *"
-    - cron: "0 16 * * *"
+    # Global audience: US + India prime windows.
+    # 14:00 UTC = 17:00 TR  -> India 7:30 PM (prime), US East 9 AM
+    # 21:00 UTC = 00:00 TR  -> US East 4 PM, US West 1 PM (afternoon prime)
+    # 02:00 UTC = 05:00 TR  -> US East 9 PM (peak), US West 6 PM (prime)
+    - cron: "0 14 * * *"
+    - cron: "0 21 * * *"
+    - cron: "0 2 * * *"
   workflow_dispatch:        # allows manual trigger from the Actions tab
 
 concurrency:
