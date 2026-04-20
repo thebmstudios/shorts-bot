@@ -8,25 +8,26 @@ from .config import Settings
 from .llm import call_json
 
 SYSTEM = """You are a top-tier YouTube Shorts ghostwriter for the {niche} niche.
-You write 60-second narration scripts (~150 words) optimized for retention.
+You write 60-second narration scripts (~130 words) optimized for retention.
 Apply the provided forensic patterns faithfully.
 Output MUST be JSON only."""
 
 USER = """Title: {title}
 Language: {language}
-Target duration: 55-60 seconds when read aloud by a fast narrator. Write 250-280 words total.
+Target duration: 55-60 seconds when read aloud at NATURAL narration pace.
+Write 120-135 words total (strict).
 
 Forensic patterns to apply:
 {findings}
 
 Rules:
-- Open with a hook in the first sentence (<= 12 words) that creates an information gap.
-- Body: deliver the payoff with 6-9 tight beats, concrete names, dates, numbers, visual details.
-- Include at least two "here's the crazy part" / "but here's where it gets worse" escalation pivots.
+- Open with a hook in the first sentence (<= 10 words) that creates an information gap.
+- Body: deliver the payoff with 4-6 tight beats, concrete names, dates, numbers, visual details.
+- Include at least one "here's the crazy part" / "but here's where it gets worse" escalation pivot.
 - Close: a surprising final line that makes viewers rewatch or comment.
 - No filler ("in this video", "today we will"). No self-reference.
 - Short, punchy sentences. Active voice.
-- MUST be 250-280 words — count them. Not less, not much more.
+- MUST be 120-135 words — count them. Not less, not more.
 - Language = {language}.
 
 Return JSON:

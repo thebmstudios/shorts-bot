@@ -22,7 +22,7 @@ jobs:
     env:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       TTS_VOICE: en-US-ChristopherNeural
-      TTS_RATE: "-8%"
+      TTS_RATE: "+0%"
       NICHE: history
       LANGUAGE: English
       TARGET_VIEWS: 1000000
