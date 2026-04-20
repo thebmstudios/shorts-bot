@@ -293,7 +293,6 @@ export const Shorts: React.FC<ShortsProps> = ({ voiceSrc, subtitles, images = []
       <Audio src={staticFile(voiceSrc)} />
       {cue && <Caption cue={cue} frame={frame} fps={fps} />}
       <ProgressBar frame={frame} totalFrames={durationInFrames} />
-      <Watermark />
     </AbsoluteFill>
   );
 };
