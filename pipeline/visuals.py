@@ -10,7 +10,17 @@ from typing import List
 import httpx
 
 WIKI_API = "https://en.wikipedia.org/w/api.php"
-HEADERS = {"User-Agent": "ShortsBot/1.0 (contact: local)"}
+# Wikipedia User-Agent policy: https://meta.wikimedia.org/wiki/User-Agent_policy
+# Requires tool name, contact URL/email, and version. Generic UAs are blocked on cloud IPs.
+HEADERS = {
+    "User-Agent": (
+        "ShortsBot/1.0 "
+        "(https://github.com/thebmstudios/shorts-bot; muratsimsak1967@gmail.com) "
+        "httpx/0.27"
+    ),
+    "Accept": "application/json",
+    "Accept-Language": "en-US,en;q=0.9",
+}
 
 
 def _search_image(query: str, client: httpx.Client) -> str | None:
