@@ -1,36 +1,27 @@
-"""ElevenLabs TTS: per-sentence synthesis with optional alternating voices,
-accurate MP3 duration probing, and subtitle timing generation."""
+"""Edge TTS: per-sentence synthesis with accurate MP3 duration probing
+and subtitle timing generation. Uses Microsoft Edge's free neural voices."""
 from __future__ import annotations
 
+import asyncio
 import json
 import struct
 from pathlib import Path
 from typing import List
 
-from elevenlabs.client import ElevenLabs
+import edge_tts
 
 from .config import Settings
 
 
-def _synth_one(client: ElevenLabs, voice_id: str, text: str, out_path: Path) -> Path:
-    audio_iter = client.text_to_speech.convert(
-        voice_id=voice_id,
-        model_id="eleven_multilingual_v2",
-        text=text,
-        output_format="mp3_44100_128",
-        voice_settings={
-            "stability": 0.5,
-            "similarity_boost": 0.75,
-            "style": 0.15,
-            "use_speaker_boost": True,
-            "speed": 0.9,
-        },
-    )
+async def _synth_one_async(voice: str, rate: str, text: str, out_path: Path) -> Path:
+    communicate = edge_tts.Communicate(text, voice, rate=rate)
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(out_path, "wb") as f:
-        for chunk in audio_iter:
-            if chunk:
-                f.write(chunk)
+    await communicate.save(str(out_path))
+    return out_path
+
+
+def _synth_one(voice: str, rate: str, text: str, out_path: Path) -> Path:
+    asyncio.run(_synth_one_async(voice, rate, text, out_path))
     return out_path
 
 
@@ -109,8 +100,8 @@ def probe_duration_seconds(mp3_path: Path) -> float:
     try:
         return _mp3_duration(mp3_path)
     except Exception:
-        # Fallback heuristic
-        return mp3_path.stat().st_size * 8 / 128000.0
+        # Fallback heuristic (edge-tts uses 24kHz mono, ~48kbps)
+        return mp3_path.stat().st_size * 8 / 48000.0
 
 
 # --- Public API ---
@@ -119,14 +110,12 @@ def probe_duration_seconds(mp3_path: Path) -> float:
 def synthesize_per_sentence(
     settings: Settings, sentences: List[str], out_dir: Path
 ) -> tuple[Path, list[dict]]:
-    """Synthesize each sentence as its own MP3, alternating voices if secondary is set.
+    """Synthesize each sentence as its own MP3 with Edge TTS.
     Concatenates into `voice.mp3` and returns (final_mp3, cues_with_exact_timings).
     MP3 frames from same encoder/bitrate can be byte-concatenated safely.
     """
-    client = ElevenLabs(api_key=settings.elevenlabs_api_key)
-    voices = [settings.elevenlabs_voice_id]
-    if settings.elevenlabs_voice_id_secondary:
-        voices.append(settings.elevenlabs_voice_id_secondary)
+    voice = settings.tts_voice
+    rate = settings.tts_rate
 
     out_dir.mkdir(parents=True, exist_ok=True)
     parts_dir = out_dir / "parts"
@@ -137,9 +126,8 @@ def synthesize_per_sentence(
     combined = out_dir / "voice.mp3"
     with open(combined, "wb") as out_f:
         for idx, sentence in enumerate(sentences):
-            voice = voices[idx % len(voices)]
             part_path = parts_dir / f"{idx:03d}.mp3"
-            _synth_one(client, voice, sentence, part_path)
+            _synth_one(voice, rate, sentence, part_path)
             dur = probe_duration_seconds(part_path)
             cues.append({
                 "text": sentence,

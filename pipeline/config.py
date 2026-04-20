@@ -14,9 +14,8 @@ load_dotenv(ROOT / ".env", override=True)
 @dataclass(frozen=True)
 class Settings:
     anthropic_api_key: str
-    elevenlabs_api_key: str
-    elevenlabs_voice_id: str
-    elevenlabs_voice_id_secondary: str
+    tts_voice: str
+    tts_rate: str
     niche: str
     language: str
     target_views: int
@@ -40,9 +39,8 @@ def load_settings() -> Settings:
     workspace.mkdir(exist_ok=True)
     return Settings(
         anthropic_api_key=_require("ANTHROPIC_API_KEY"),
-        elevenlabs_api_key=_require("ELEVENLABS_API_KEY"),
-        elevenlabs_voice_id=_require("ELEVENLABS_VOICE_ID"),
-        elevenlabs_voice_id_secondary=os.environ.get("ELEVENLABS_VOICE_ID_SECONDARY", "").strip(),
+        tts_voice=os.environ.get("TTS_VOICE", "en-US-ChristopherNeural").strip(),
+        tts_rate=os.environ.get("TTS_RATE", "-8%").strip(),
         niche=os.environ.get("NICHE", "history"),
         language=os.environ.get("LANGUAGE", "English"),
         target_views=int(os.environ.get("TARGET_VIEWS", "1000000")),
