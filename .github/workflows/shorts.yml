@@ -18,7 +18,7 @@ concurrency:
 jobs:
   produce:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45  # allows room for 1 pipeline retry on failure
     env:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       TTS_VOICE: en-US-ChristopherNeural
