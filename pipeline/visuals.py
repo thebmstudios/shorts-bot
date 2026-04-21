@@ -54,6 +54,30 @@ def _search_image(query: str, client: httpx.Client) -> str | None:
     return None
 
 
+def _is_valid_image(path: Path) -> bool:
+    """Verify the file starts with a real raster image signature Remotion can decode."""
+    try:
+        with open(path, "rb") as f:
+            head = f.read(16)
+    except Exception:
+        return False
+    if len(head) < 8:
+        return False
+    # JPEG
+    if head[:3] == b"\xff\xd8\xff":
+        return True
+    # PNG
+    if head[:8] == b"\x89PNG\r\n\x1a\n":
+        return True
+    # WEBP: RIFF....WEBP
+    if head[:4] == b"RIFF" and head[8:12] == b"WEBP":
+        return True
+    # GIF
+    if head[:6] in (b"GIF87a", b"GIF89a"):
+        return True
+    return False
+
+
 def _download(url: str, out_path: Path, client: httpx.Client, retries: int = 3) -> Path | None:
     for attempt in range(retries):
         try:
@@ -68,6 +92,13 @@ def _download(url: str, out_path: Path, client: httpx.Client, retries: int = 3) 
                 with open(out_path, "wb") as f:
                     for chunk in r.iter_bytes():
                         f.write(chunk)
+            if not _is_valid_image(out_path):
+                print(f"[visuals] rejected non-decodable image: {url}")
+                try:
+                    out_path.unlink()
+                except Exception:
+                    pass
+                return None
             return out_path
         except Exception as e:
             if attempt < retries - 1:
