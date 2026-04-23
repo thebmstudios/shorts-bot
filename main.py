@@ -115,6 +115,12 @@ def main() -> None:
     url = upload.upload(settings, out_mp4, final_title, description, tags)
     print(f"[done] {url}")
     (run_dir / "youtube_url.txt").write_text(url, encoding="utf-8")
+    # Persist topic so future runs know what to avoid repeating
+    try:
+        topic_mod.append_topic_to_history(settings.root, chosen_topic["topic"])
+        print(f"[history] appended topic to {topic_mod.HISTORY_FILE_REL}")
+    except Exception as e:
+        print(f"[history] warn: could not append topic history: {e}")
 
 
 if __name__ == "__main__":
