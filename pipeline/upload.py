@@ -1,6 +1,9 @@
-"""Upload rendered Shorts to YouTube via Data API v3 (OAuth desktop flow)."""
+"""Upload rendered Shorts to YouTube via Data API v3 (OAuth desktop flow).
+Also uploads an English SRT caption track so YouTube auto-translates
+into 50+ languages for global reach."""
 from __future__ import annotations
 
+import tempfile
 from pathlib import Path
 from typing import List
 
@@ -12,7 +15,8 @@ from googleapiclient.http import MediaFileUpload
 
 from .config import Settings
 
-SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
+# force-ssl covers upload + captions.insert
+SCOPES = ["https://www.googleapis.com/auth/youtube.force-ssl"]
 
 
 def _get_credentials(settings: Settings) -> Credentials:
@@ -36,12 +40,71 @@ def _get_credentials(settings: Settings) -> Credentials:
     return creds
 
 
+def _cues_to_srt(cues: list[dict]) -> str:
+    """Convert [{start, end, text}, ...] to SRT format."""
+    def fmt(t: float) -> str:
+        hrs = int(t // 3600)
+        mins = int((t % 3600) // 60)
+        secs = int(t % 60)
+        ms = int(round((t - int(t)) * 1000))
+        if ms >= 1000:
+            secs += 1
+            ms = 0
+        return f"{hrs:02d}:{mins:02d}:{secs:02d},{ms:03d}"
+
+    lines: list[str] = []
+    for i, cue in enumerate(cues, 1):
+        start = float(cue.get("start", 0.0))
+        end = float(cue.get("end", start + 1.0))
+        text = str(cue.get("text", "")).strip()
+        if not text:
+            continue
+        lines.append(str(i))
+        lines.append(f"{fmt(start)} --> {fmt(end)}")
+        lines.append(text)
+        lines.append("")
+    return "\n".join(lines)
+
+
+def _upload_caption(youtube, video_id: str, srt_content: str) -> None:
+    """Attach an English SRT track to the video so YouTube auto-translates it."""
+    tmp = None
+    try:
+        tmp = tempfile.NamedTemporaryFile(
+            mode="w", suffix=".srt", delete=False, encoding="utf-8"
+        )
+        tmp.write(srt_content)
+        tmp.close()
+        media = MediaFileUpload(
+            tmp.name, chunksize=-1, resumable=False, mimetype="application/octet-stream"
+        )
+        body = {
+            "snippet": {
+                "videoId": video_id,
+                "language": "en",
+                "name": "English",
+                "isDraft": False,
+            }
+        }
+        youtube.captions().insert(part="snippet", body=body, media_body=media).execute()
+        print("[captions] English SRT uploaded (YouTube auto-translate enabled)")
+    except Exception as e:
+        print(f"[captions] warn: caption upload failed (video still live): {e}")
+    finally:
+        if tmp is not None:
+            try:
+                Path(tmp.name).unlink(missing_ok=True)
+            except Exception:
+                pass
+
+
 def upload(
     settings: Settings,
     video_path: Path,
     title: str,
     description: str,
     tags: List[str],
+    cues: list[dict] | None = None,
 ) -> str:
     creds = _get_credentials(settings)
     youtube = build("youtube", "v3", credentials=creds)
@@ -51,6 +114,8 @@ def upload(
             "description": description,
             "tags": tags[:500],
             "categoryId": "22",  # People & Blogs; change to 27 (Education) if desired
+            "defaultLanguage": "en",
+            "defaultAudioLanguage": "en",
         },
         "status": {
             "privacyStatus": settings.youtube_privacy,
@@ -65,4 +130,11 @@ def upload(
         if status:
             print(f"[upload] progress {int(status.progress() * 100)}%")
     video_id = response["id"]
+
+    # Upload SRT caption track (best-effort; doesn't block video URL return)
+    if cues:
+        srt = _cues_to_srt(cues)
+        if srt.strip():
+            _upload_caption(youtube, video_id, srt)
+
     return f"https://youtube.com/shorts/{video_id}"

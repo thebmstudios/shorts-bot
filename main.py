@@ -112,7 +112,7 @@ def main() -> None:
     print("[upload] Uploading to YouTube...")
     description = title_info.get("description", final_title)
     tags = title_info.get("tags", [])
-    url = upload.upload(settings, out_mp4, final_title, description, tags)
+    url = upload.upload(settings, out_mp4, final_title, description, tags, cues=cues)
     print(f"[done] {url}")
     (run_dir / "youtube_url.txt").write_text(url, encoding="utf-8")
     # Persist topic so future runs know what to avoid repeating
