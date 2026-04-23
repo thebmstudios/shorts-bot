@@ -21,26 +21,42 @@ Forensic findings (patterns to apply, NOT subjects to copy):
 Recently covered topics (DO NOT repeat any of these — pick a different subject, even if from the same theme pool):
 {recent}
 
-PREFERRED TOPIC POOLS (weight selection toward these — the channel's identity):
-1. Central Asian empires: Xiongnu, Göktürks, Seljuks, Timurids, Mongols (Genghis Khan, Modu Chanyu/Mete Han, Attila, Timur, Bumin Qaghan, Tughril)
-2. Ottoman Empire: sultans, sieges, Janissaries, naval battles, harem intrigue, conquests, collapse (Mehmed II, Suleiman, Selim, Murad, Roxelana, Sinan)
-3. Early Turkic peoples: Xiongnu origins, Orkhon runes, Karakhanids, Ghaznavids, migration waves, steppe warfare tactics
-4. Rome: republic crises, emperors (both famous and obscure), legions, gladiators, plagues, late-empire collapse, Byzantine offshoots
-5. Great battles & military history: Gaugamela, Cannae, Manzikert, Ankara, Vienna, Lepanto, Gallipoli, Kursk, Stalingrad, lesser-known decisive clashes
+PREFERRED TOPIC POOLS — ~70% of topics MUST come from these regions/themes (the channel's identity):
 
-Other good themes (use occasionally to vary): inventors, disasters, mysteries, assassinations, cover-ups, rebellions, explorers, plagues.
+TURKIC & OTTOMAN (strong emphasis):
+- Turkic/Central Asian empires: Xiongnu, Göktürks, Seljuks, Timurids, Mongols (Genghis Khan, Modu Chanyu/Mete Han, Attila, Timur, Bumin Qaghan, Tughril, Alp Arslan)
+- Ottoman Empire: sultans, sieges, Janissaries, naval battles, harem intrigue, conquests, collapse (Mehmed II, Suleiman, Selim, Murad, Roxelana, Sinan, Barbarossa)
+- East Turkestan (Uyghur history, Dzungar genocide, Qing conquest, Kashgar, Silk Road Turkic kingdoms)
+
+ROME: republic crises, emperors (famous AND obscure), legions, gladiators, plagues, late-empire collapse, Byzantine offshoots.
+
+GREAT BATTLES & MILITARY HISTORY: Gaugamela, Cannae, Manzikert, Ankara, Varna, Mohács, Vienna, Lepanto, Trafalgar, Waterloo, Gallipoli, Verdun, Stalingrad, Kursk, Midway, Inchon, lesser-known decisive clashes.
+
+MAJOR NATIONAL HISTORIES (draw from any):
+- China: dynasties (Qin, Han, Tang, Song, Ming, Qing), warlords, Taiping, Boxer, Cultural Revolution, forgotten emperors
+- Russia: Tsars, Rurik, Ivan the Terrible, Peter, Catherine, Rasputin-era, Stalin, gulags, Cold War
+- Japan: samurai, shoguns, Sengoku, Meiji Restoration, WWII (Pearl Harbor, Midway, kamikaze, Nanking), emperors
+- North & South Korea: Three Kingdoms, Joseon, Japanese occupation, Korean War, DMZ, Kim dynasty
+- Germany: Holy Roman Empire, Prussia, Bismarck, Weimar, Third Reich, Stasi, Berlin Wall
+- England/UK: Tudors, Stuarts, Elizabeth I, empire, Churchill, WWII, Cromwell, Napoleon-era
+- France: Gauls, Franks, Crusades, Louis XIV, Revolution, Napoleon, WWII resistance
+- America/USA: founding, Civil War, presidents, frontier, WWII, Cold War, CIA operations, forgotten conflicts
+- Greece: Mycenaean, Persian Wars, Peloponnesian, Alexander, Hellenistic, Byzantine
+
+~30% OTHER: any history worth telling — Africa, South America, India, Southeast Asia, Middle East beyond Ottoman, inventors, plagues, disasters, cover-ups, mysteries.
 
 Diversity rules:
-- If the last 5 topics all came from the same pool, deliberately pick a different pool
-- Within a pool, pick a different figure/battle/era than the last one from that pool
+- If the last 5 topics all came from the same country/empire, deliberately pick a different one
+- Within a region, pick a different figure/era than the last one from that region
 - Specific > vague: "Mete Han's wedge formation at the Battle of Baideng 200 BC" beats "Ancient Turkic warfare"
+- Hook on the darkest/weirdest angle, not the textbook summary
 
 Return JSON:
 {{
   "topic": string,                  // 1-line topic specific enough to script (include names/dates)
   "angle": string,                  // the hook/angle that differentiates it
   "why": string,                    // why this will beat competitors
-  "pool": string,                   // central-asian / ottoman / early-turkic / rome / great-battle / other
+  "pool": string,                   // turkic-ottoman / east-turkestan / rome / great-battle / china / russia / japan / korea / germany / uk / france / usa / greece / other
   "era": string,                    // ancient/medieval/early-modern/industrial/20th/contemporary
   "region": string                  // Asia/Europe/Africa/Americas/Middle-East/Oceania
 }}"""
