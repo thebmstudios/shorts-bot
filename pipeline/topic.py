@@ -18,23 +18,31 @@ Language: {language}
 Forensic findings (patterns to apply, NOT subjects to copy):
 {findings}
 
-Recently covered topics (DO NOT repeat any of these subjects, figures, or events — pick something from a DIFFERENT era, region, or theme):
+Recently covered topics (DO NOT repeat any of these — pick a different subject, even if from the same theme pool):
 {recent}
 
+PREFERRED TOPIC POOLS (weight selection toward these — the channel's identity):
+1. Central Asian empires: Xiongnu, Göktürks, Seljuks, Timurids, Mongols (Genghis Khan, Modu Chanyu/Mete Han, Attila, Timur, Bumin Qaghan, Tughril)
+2. Ottoman Empire: sultans, sieges, Janissaries, naval battles, harem intrigue, conquests, collapse (Mehmed II, Suleiman, Selim, Murad, Roxelana, Sinan)
+3. Early Turkic peoples: Xiongnu origins, Orkhon runes, Karakhanids, Ghaznavids, migration waves, steppe warfare tactics
+4. Rome: republic crises, emperors (both famous and obscure), legions, gladiators, plagues, late-empire collapse, Byzantine offshoots
+5. Great battles & military history: Gaugamela, Cannae, Manzikert, Ankara, Vienna, Lepanto, Gallipoli, Kursk, Stalingrad, lesser-known decisive clashes
+
+Other good themes (use occasionally to vary): inventors, disasters, mysteries, assassinations, cover-ups, rebellions, explorers, plagues.
+
 Diversity rules:
-- Rotate across eras: ancient, medieval, early modern, industrial, 20th century, contemporary
-- Rotate across regions: Asia, Europe, Africa, Americas, Middle East, Oceania
-- Rotate across themes: rulers, inventors, disasters, mysteries, scientific discoveries, assassinations, cover-ups, rebellions, explorers, plagues
-- If recent topics skew toward one era/region/theme, deliberately pick the opposite
+- If the last 5 topics all came from the same pool, deliberately pick a different pool
+- Within a pool, pick a different figure/battle/era than the last one from that pool
+- Specific > vague: "Mete Han's wedge formation at the Battle of Baideng 200 BC" beats "Ancient Turkic warfare"
 
 Return JSON:
 {{
   "topic": string,                  // 1-line topic specific enough to script (include names/dates)
   "angle": string,                  // the hook/angle that differentiates it
   "why": string,                    // why this will beat competitors
+  "pool": string,                   // central-asian / ottoman / early-turkic / rome / great-battle / other
   "era": string,                    // ancient/medieval/early-modern/industrial/20th/contemporary
-  "region": string,                 // Asia/Europe/Africa/Americas/Middle-East/Oceania
-  "theme": string                   // ruler/inventor/disaster/mystery/science/assassination/cover-up/rebellion/explorer/plague/other
+  "region": string                  // Asia/Europe/Africa/Americas/Middle-East/Oceania
 }}"""
 
 
