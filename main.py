@@ -90,9 +90,14 @@ def main() -> None:
 
     print("[7/8] Fetching topic visuals from Wikipedia...")
     keywords = script.get("b_roll_keywords") or []
-    # also prepend topic name for stronger relevance
+    # Prepend topic name so the first image is the strongest on-topic anchor.
     keywords = [chosen_topic["topic"]] + keywords
-    images = visuals.fetch_images(keywords, run_dir / "images", min_count=6)
+    images = visuals.fetch_images(
+        keywords,
+        run_dir / "images",
+        min_count=6,
+        topic_context=chosen_topic["topic"],
+    )
     print(f"   fetched {len(images)} images")
 
     if args.skip_render:

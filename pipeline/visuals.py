@@ -23,8 +23,38 @@ HEADERS = {
 }
 
 
-def _search_image(query: str, client: httpx.Client) -> str | None:
-    """Return best image URL for a search query, or None."""
+def _tokens(s: str) -> set[str]:
+    """Lowercase word tokens, length>=3, for relevance scoring."""
+    return {w for w in "".join(c if c.isalnum() else " " for c in s.lower()).split() if len(w) >= 3}
+
+
+def _score_page(page: dict, keyword: str, topic_context: str) -> float:
+    """Higher = more relevant. Combines title overlap with keyword + topic + has-original-image."""
+    title = page.get("title", "")
+    title_toks = _tokens(title)
+    kw_toks = _tokens(keyword)
+    topic_toks = _tokens(topic_context) if topic_context else set()
+    if not title_toks:
+        return 0.0
+    kw_overlap = len(title_toks & kw_toks) / max(len(kw_toks), 1)
+    topic_overlap = len(title_toks & topic_toks) / max(len(topic_toks), 1) if topic_toks else 0.0
+    # Wikipedia search gives `index` (lower = better hit). Convert to a small bonus.
+    idx = page.get("index", 99)
+    rank_bonus = max(0.0, 0.3 - 0.05 * idx)
+    has_orig = 0.15 if page.get("original", {}).get("source") else 0.0
+    # Heavy weight on direct keyword match; topic context is secondary safety net.
+    return kw_overlap * 1.0 + topic_overlap * 0.4 + rank_bonus + has_orig
+
+
+def _search_image(
+    query: str, client: httpx.Client, topic_context: str = "", min_score: float = 0.25
+) -> str | None:
+    """Return best image URL for a search query, or None.
+
+    Combines query with topic_context to bias Wikipedia toward on-topic pages,
+    then re-ranks the top 5 candidates by title overlap with both. Rejects results
+    whose relevance score is below min_score (filters generic / off-topic hits)."""
+    composed = f"{query} {topic_context}".strip() if topic_context else query
     params = {
         "action": "query",
         "format": "json",
@@ -32,25 +62,39 @@ def _search_image(query: str, client: httpx.Client) -> str | None:
         "piprop": "original|thumbnail",
         "pithumbsize": "1600",
         "generator": "search",
-        "gsrsearch": query,
-        "gsrlimit": "3",
+        "gsrsearch": composed,
+        "gsrlimit": "5",
     }
     try:
         r = client.get(WIKI_API, params=params, headers=HEADERS, timeout=15.0)
         r.raise_for_status()
-        pages = r.json().get("query", {}).get("pages", {})
+        pages = list(r.json().get("query", {}).get("pages", {}).values())
     except Exception as e:
         print(f"[visuals] wiki search failed for '{query}': {e}")
         return None
-    # Prefer original resolution, fall back to thumbnail
-    for page in pages.values():
-        orig = page.get("original", {}).get("source")
-        if orig:
-            return orig
-    for page in pages.values():
-        thumb = page.get("thumbnail", {}).get("source")
-        if thumb:
-            return thumb
+    if not pages:
+        return None
+    # Score every candidate, keep only those above the relevance floor.
+    scored = sorted(
+        ((_score_page(p, query, topic_context), p) for p in pages),
+        key=lambda x: x[0],
+        reverse=True,
+    )
+    best_score, best_page = scored[0]
+    if best_score < min_score:
+        print(
+            f"[visuals] rejected low-relevance result for '{query}' "
+            f"(top='{best_page.get('title','?')}' score={best_score:.2f})"
+        )
+        return None
+    # Walk scored list to find the first with a usable image URL.
+    for score, page in scored:
+        if score < min_score:
+            break
+        url = page.get("original", {}).get("source") or page.get("thumbnail", {}).get("source")
+        if url:
+            print(f"[visuals] '{query}' -> '{page.get('title','?')}' (score={score:.2f})")
+            return url
     return None
 
 
@@ -109,14 +153,25 @@ def _download(url: str, out_path: Path, client: httpx.Client, retries: int = 3) 
     return None
 
 
-def fetch_images(keywords: List[str], out_dir: Path, min_count: int = 6) -> List[Path]:
-    """Fetch one image per keyword. Skips duplicates; tries to reach min_count."""
+def fetch_images(
+    keywords: List[str],
+    out_dir: Path,
+    min_count: int = 6,
+    topic_context: str = "",
+) -> List[Path]:
+    """Fetch one image per keyword. Skips duplicates; tries to reach min_count.
+
+    `topic_context` is the overall topic (e.g. "Suleiman the Magnificent siege of Vienna")
+    used to bias and re-rank Wikipedia results so generic keywords still pull on-topic pages.
+    """
     out_dir.mkdir(parents=True, exist_ok=True)
     saved: list[Path] = []
     seen: set[str] = set()
     with httpx.Client() as client:
         for kw in keywords:
-            url = _search_image(kw, client)
+            # First keyword is usually the topic itself — search it bare (no context echo).
+            ctx = "" if kw.strip().lower() == topic_context.strip().lower() else topic_context
+            url = _search_image(kw, client, topic_context=ctx)
             if not url or url in seen:
                 continue
             seen.add(url)
