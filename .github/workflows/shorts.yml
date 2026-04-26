@@ -2,11 +2,13 @@ name: Daily Shorts
 
 on:
   schedule:
-    # Global audience: US + India prime windows.
+    # Global audience: US + India + Europe prime windows. 4 slots, ~6h apart.
     # 14:00 UTC = 17:00 TR  -> India 7:30 PM (prime), US East 9 AM
+    # 17:00 UTC = 20:00 TR  -> Europe evening, US East noon, US West 9 AM
     # 21:00 UTC = 00:00 TR  -> US East 4 PM, US West 1 PM (afternoon prime)
     # 02:00 UTC = 05:00 TR  -> US East 9 PM (peak), US West 6 PM (prime)
     - cron: "0 14 * * *"
+    - cron: "0 17 * * *"
     - cron: "0 21 * * *"
     - cron: "0 2 * * *"
   workflow_dispatch:        # allows manual trigger from the Actions tab
