@@ -47,14 +47,14 @@ def _score_page(page: dict, keyword: str, topic_context: str) -> float:
 
 
 def _search_image(
-    query: str, client: httpx.Client, topic_context: str = "", min_score: float = 0.25
+    query: str, client: httpx.Client, topic_context: str = "", min_score: float = 0.15
 ) -> str | None:
     """Return best image URL for a search query, or None.
 
-    Combines query with topic_context to bias Wikipedia toward on-topic pages,
-    then re-ranks the top 5 candidates by title overlap with both. Rejects results
-    whose relevance score is below min_score (filters generic / off-topic hits)."""
-    composed = f"{query} {topic_context}".strip() if topic_context else query
+    Searches Wikipedia with the bare keyword (composing with the full topic over-
+    constrains the query — verbose topics from the LLM choke the search), then
+    re-ranks the top 5 candidates by title overlap with the keyword AND the
+    topic context. Rejects results whose relevance score is below min_score."""
     params = {
         "action": "query",
         "format": "json",
@@ -62,7 +62,7 @@ def _search_image(
         "piprop": "original|thumbnail",
         "pithumbsize": "1600",
         "generator": "search",
-        "gsrsearch": composed,
+        "gsrsearch": query,
         "gsrlimit": "5",
     }
     try:
@@ -167,10 +167,14 @@ def fetch_images(
     out_dir.mkdir(parents=True, exist_ok=True)
     saved: list[Path] = []
     seen: set[str] = set()
+    # LLM can emit verbose multi-clause topics ("Julia Maesa (218-224 AD): The Syrian
+    # powerbroker who..."). Trim to the first 8 words for scoring — keeps the proper
+    # nouns without flooding the overlap math with stopwords.
+    short_ctx = " ".join(topic_context.split()[:8]) if topic_context else ""
     with httpx.Client() as client:
         for kw in keywords:
-            # First keyword is usually the topic itself — search it bare (no context echo).
-            ctx = "" if kw.strip().lower() == topic_context.strip().lower() else topic_context
+            # If the keyword IS the topic, don't double-count it in scoring.
+            ctx = "" if kw.strip().lower() == topic_context.strip().lower() else short_ctx
             url = _search_image(kw, client, topic_context=ctx)
             if not url or url in seen:
                 continue

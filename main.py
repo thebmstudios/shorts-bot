@@ -90,13 +90,18 @@ def main() -> None:
 
     print("[7/8] Fetching topic visuals from Wikipedia...")
     keywords = script.get("b_roll_keywords") or []
-    # Prepend topic name so the first image is the strongest on-topic anchor.
-    keywords = [chosen_topic["topic"]] + keywords
+    # The LLM sometimes returns verbose multi-clause topics. Strip to the headline
+    # phrase (before the first colon, capped at 6 words) so it's a real Wikipedia query.
+    raw_topic = chosen_topic["topic"]
+    short_topic = raw_topic.split(":", 1)[0].strip()
+    short_topic = " ".join(short_topic.split()[:6])
+    # Prepend short topic so the first image is the strongest on-topic anchor.
+    keywords = [short_topic] + keywords
     images = visuals.fetch_images(
         keywords,
         run_dir / "images",
         min_count=6,
-        topic_context=chosen_topic["topic"],
+        topic_context=short_topic,
     )
     print(f"   fetched {len(images)} images")
 
