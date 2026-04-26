@@ -171,29 +171,47 @@ def fetch_images(
     # powerbroker who..."). Trim to the first 8 words for scoring — keeps the proper
     # nouns without flooding the overlap math with stopwords.
     short_ctx = " ".join(topic_context.split()[:8]) if topic_context else ""
+
+    def _try(client: httpx.Client, kw: str, min_score: float) -> bool:
+        """Try one keyword at the given relevance floor. Returns True if saved."""
+        ctx = "" if kw.strip().lower() == topic_context.strip().lower() else short_ctx
+        url = _search_image(kw, client, topic_context=ctx, min_score=min_score)
+        if not url or url in seen:
+            return False
+        seen.add(url)
+        ext = ".jpg"
+        low = url.lower()
+        for candidate in (".png", ".webp", ".jpeg", ".jpg", ".svg"):
+            if candidate in low:
+                ext = candidate if candidate != ".jpeg" else ".jpg"
+                break
+        if ext == ".svg":
+            return False
+        name = hashlib.md5(url.encode()).hexdigest()[:10] + ext
+        path = out_dir / name
+        if _download(url, path, client):
+            saved.append(path)
+            return True
+        return False
+
     with httpx.Client() as client:
+        # Pass 1: strict relevance filter — only pages clearly about the keyword/topic.
         for kw in keywords:
-            # If the keyword IS the topic, don't double-count it in scoring.
-            ctx = "" if kw.strip().lower() == topic_context.strip().lower() else short_ctx
-            url = _search_image(kw, client, topic_context=ctx)
-            if not url or url in seen:
-                continue
-            seen.add(url)
-            ext = ".jpg"
-            low = url.lower()
-            for candidate in (".png", ".webp", ".jpeg", ".jpg", ".svg"):
-                if candidate in low:
-                    ext = candidate if candidate != ".jpeg" else ".jpg"
-                    break
-            if ext == ".svg":
-                continue  # skip vector — renderer won't treat it as photo
-            name = hashlib.md5(url.encode()).hexdigest()[:10] + ext
-            path = out_dir / name
-            if _download(url, path, client):
-                saved.append(path)
+            if _try(client, kw, min_score=0.15):
                 if len(saved) >= max(min_count, 10):
                     break
             time.sleep(0.8)  # be polite to Wikimedia
+        # Pass 2 fallback: if first pass didn't find enough, drop the relevance floor
+        # so the video never goes out with zero/very few visuals. Better an okay-ish
+        # image than a black screen.
+        if len(saved) < 3:
+            print(f"[visuals] only {len(saved)} after strict pass; retrying with relaxed scoring")
+            for kw in keywords:
+                if len(saved) >= 4:
+                    break
+                _try(client, kw, min_score=0.0)
+                time.sleep(0.8)
+    print(f"[visuals] final image count: {len(saved)}")
     return saved
 
 
