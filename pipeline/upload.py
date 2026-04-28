@@ -66,8 +66,27 @@ def _cues_to_srt(cues: list[dict]) -> str:
     return "\n".join(lines)
 
 
-def _upload_caption(youtube, video_id: str, srt_content: str) -> None:
-    """Attach an English SRT track to the video so YouTube auto-translates it."""
+_LANG_DISPLAY = {
+    "en": "English",
+    "tr": "Türkçe",
+    "es": "Español",
+    "de": "Deutsch",
+    "fr": "Français",
+    "ar": "العربية",
+    "hi": "हिन्दी",
+    "pt": "Português",
+    "ru": "Русский",
+    "ja": "日本語",
+    "zh": "中文",
+}
+
+
+def _upload_caption(
+    youtube, video_id: str, srt_content: str, lang: str = "en"
+) -> None:
+    """Attach an SRT track in the given language so YouTube auto-translates from it."""
+    code = (lang or "en").lower()
+    name = _LANG_DISPLAY.get(code, code.upper())
     tmp = None
     try:
         tmp = tempfile.NamedTemporaryFile(
@@ -81,15 +100,15 @@ def _upload_caption(youtube, video_id: str, srt_content: str) -> None:
         body = {
             "snippet": {
                 "videoId": video_id,
-                "language": "en",
-                "name": "English",
+                "language": code,
+                "name": name,
                 "isDraft": False,
             }
         }
         youtube.captions().insert(part="snippet", body=body, media_body=media).execute()
-        print("[captions] English SRT uploaded (YouTube auto-translate enabled)")
+        print(f"[captions] {name} SRT uploaded (YouTube auto-translate enabled)")
     except Exception as e:
-        print(f"[captions] warn: caption upload failed (video still live): {e}")
+        print(f"[captions] warn: {name} caption upload failed (video still live): {e}")
     finally:
         if tmp is not None:
             try:
@@ -105,6 +124,7 @@ def upload(
     description: str,
     tags: List[str],
     cues: list[dict] | None = None,
+    caption_lang: str = "en",
 ) -> str:
     creds = _get_credentials(settings)
     youtube = build("youtube", "v3", credentials=creds)
@@ -114,7 +134,10 @@ def upload(
             "description": description,
             "tags": tags[:500],
             "categoryId": "22",  # People & Blogs; change to 27 (Education) if desired
-            "defaultLanguage": "en",
+            # Audio is always English (TTS voice). defaultLanguage reflects the
+            # caption track's language so YouTube treats it as the source for
+            # auto-translation into other languages.
+            "defaultLanguage": (caption_lang or "en").lower(),
             "defaultAudioLanguage": "en",
         },
         "status": {
@@ -135,6 +158,6 @@ def upload(
     if cues:
         srt = _cues_to_srt(cues)
         if srt.strip():
-            _upload_caption(youtube, video_id, srt)
+            _upload_caption(youtube, video_id, srt, lang=caption_lang)
 
     return f"https://youtube.com/shorts/{video_id}"

@@ -37,6 +37,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Pick subtitle language for this slot
+        # Turkey-prime cron slots get Turkish subtitles; others stay English.
+        # Manual workflow_dispatch defaults to English unless SUBTITLE_LANG is
+        # set in the environment by the caller.
+        run: |
+          case "${{ github.event.schedule }}" in
+            "0 14 * * *"|"0 17 * * *")
+              echo "SUBTITLE_LANG=tr" >> $GITHUB_ENV
+              echo "[lang] Turkey-prime slot -> Turkish subtitles" ;;
+            *)
+              echo "SUBTITLE_LANG=en" >> $GITHUB_ENV
+              echo "[lang] non-TR slot -> English subtitles" ;;
+          esac
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -75,15 +89,20 @@ jobs:
           retry_wait_seconds: 30
           command: python main.py --urls-file urls.txt
 
-      - name: Commit updated topic history
+      - name: Commit updated topic history + metadata
         if: success()
         run: |
-          if [ -f pipeline/topic_history.json ] && ! git diff --quiet pipeline/topic_history.json; then
+          changed=0
+          for f in pipeline/topic_history.json pipeline/topic_meta.json; do
+            if [ -f "$f" ] && ! git diff --quiet "$f"; then
+              git add "$f"
+              changed=1
+            fi
+          done
+          if [ "$changed" -eq 1 ]; then
             git config user.name "shorts-bot"
             git config user.email "shorts-bot@users.noreply.github.com"
-            git add pipeline/topic_history.json
-            git commit -m "chore: append topic to history [skip ci]"
-            # retry push up to 3 times in case of concurrent runs racing
+            git commit -m "chore: append topic + metadata [skip ci]"
             for i in 1 2 3; do
               if git pull --rebase --autostash && git push; then
                 echo "topic history pushed"

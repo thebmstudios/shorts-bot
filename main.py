@@ -9,11 +9,22 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
 
-from pipeline import analyzer, titles, topic as topic_mod, tts, render, upload, visuals, writer
+from pipeline import (
+    analyzer,
+    titles,
+    topic as topic_mod,
+    translate,
+    tts,
+    render,
+    upload,
+    visuals,
+    writer,
+)
 from pipeline.config import load_settings
 from pipeline.transcript import fetch_many
 
@@ -84,9 +95,16 @@ def main() -> None:
 
     print("[6/8] Synthesizing voice + subtitles...")
     voice_path, cues = tts.synthesize_per_sentence(settings, script["sentences"], run_dir)
-    tts.write_subtitles_json(cues, run_dir / "subtitles.json")
     duration = cues[-1]["end"] if cues else 0.0
     print(f"   voice duration ~{duration:.1f}s, {len(cues)} cues")
+
+    # Optional subtitle translation. Audio stays English; only the on-screen
+    # subtitles and the YouTube caption track switch to the target language.
+    sub_lang = os.environ.get("SUBTITLE_LANG", "en").strip().lower() or "en"
+    if sub_lang != "en" and cues:
+        print(f"[6b/8] Translating subtitles -> {sub_lang}...")
+        cues = translate.translate_cues(settings, cues, sub_lang)
+    tts.write_subtitles_json(cues, run_dir / "subtitles.json")
 
     print("[7/8] Fetching topic visuals from Wikipedia...")
     keywords = script.get("b_roll_keywords") or []
@@ -122,13 +140,27 @@ def main() -> None:
     print("[upload] Uploading to YouTube...")
     description = title_info.get("description", final_title)
     tags = title_info.get("tags", [])
-    url = upload.upload(settings, out_mp4, final_title, description, tags, cues=cues)
+    url = upload.upload(
+        settings,
+        out_mp4,
+        final_title,
+        description,
+        tags,
+        cues=cues,
+        caption_lang=sub_lang,
+    )
     print(f"[done] {url}")
     (run_dir / "youtube_url.txt").write_text(url, encoding="utf-8")
-    # Persist topic so future runs know what to avoid repeating
+    # Persist topic + pool/format so future runs can enforce diversity rules.
     try:
         topic_mod.append_topic_to_history(settings.root, chosen_topic["topic"])
-        print(f"[history] appended topic to {topic_mod.HISTORY_FILE_REL}")
+        topic_mod.append_topic_metadata(
+            settings.root,
+            chosen_topic["topic"],
+            pool=str(chosen_topic.get("pool", "")).strip() or topic_mod._infer_pool(chosen_topic["topic"]),
+            fmt=str(chosen_topic.get("format", "")).strip(),
+        )
+        print(f"[history] appended topic + metadata")
     except Exception as e:
         print(f"[history] warn: could not append topic history: {e}")
 
