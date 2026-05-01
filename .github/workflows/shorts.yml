@@ -2,22 +2,21 @@ name: Daily Shorts
 
 on:
   schedule:
-    # GHA cron is best-effort and frequently delays/skips runs. These exist as
-    # a fallback only — the primary scheduling is an external service hitting
-    # the repository_dispatch endpoint below at the exact UTC times.
-    # 14:00 UTC = 17:00 TR  -> India + US East morning  (Turkish subtitles)
-    # 17:00 UTC = 20:00 TR  -> Europe evening + US noon (Turkish subtitles)
-    # 21:00 UTC = 00:00 TR  -> US afternoon prime
-    # 02:00 UTC = 05:00 TR  -> US evening peak
-    - cron: "0 14 * * *"
+    # European-focused windows. All-English subtitles for every slot.
+    # GHA cron is best-effort; the external scheduler (cron-job.org) is the
+    # primary trigger via repository_dispatch.
+    # 06:00 UTC = 09:00 TR / 07:00 CET  -> Europe morning commute
+    # 11:00 UTC = 14:00 TR / 12:00 CET  -> Europe lunch
+    # 17:00 UTC = 20:00 TR / 18:00 CET  -> Europe evening start (prime)
+    # 20:00 UTC = 23:00 TR / 21:00 CET  -> Europe late evening (prime)
+    - cron: "0 6 * * *"
+    - cron: "0 11 * * *"
     - cron: "0 17 * * *"
-    - cron: "0 21 * * *"
-    - cron: "0 2 * * *"
+    - cron: "0 20 * * *"
   workflow_dispatch:        # allows manual trigger from the Actions tab
   repository_dispatch:
-    # Triggered by the external scheduler (cron-job.org). One event_type per
-    # subtitle language so the workflow knows which track to upload.
-    types: [shorts-tr, shorts-en]
+    # Triggered by external scheduler (cron-job.org). All slots English.
+    types: [shorts-en]
 
 concurrency:
   group: shorts
@@ -43,30 +42,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Pick subtitle language for this slot
-        # Source of truth, in order of precedence:
-        #   1. repository_dispatch event_type (shorts-tr / shorts-en) — used
-        #      by the external scheduler.
-        #   2. github.event.schedule (only set on cron events) — fallback when
-        #      the cron actually fires.
-        #   3. workflow_dispatch (manual) — defaults to English.
+      - name: Subtitle language
+        # All slots use English subtitles. Kept as a step so we can vary later
+        # without touching the rest of the workflow.
         run: |
-          LANG=en
-          case "${{ github.event_name }}" in
-            repository_dispatch)
-              case "${{ github.event.action }}" in
-                shorts-tr) LANG=tr ;;
-                shorts-en) LANG=en ;;
-              esac
-              ;;
-            schedule)
-              case "${{ github.event.schedule }}" in
-                "0 14 * * *"|"0 17 * * *") LANG=tr ;;
-              esac
-              ;;
-          esac
-          echo "SUBTITLE_LANG=$LANG" >> $GITHUB_ENV
-          echo "[lang] event=${{ github.event_name }} -> SUBTITLE_LANG=$LANG"
+          echo "SUBTITLE_LANG=en" >> $GITHUB_ENV
+          echo "[lang] all slots -> English subtitles"
 
       - name: Set up Python
         uses: actions/setup-python@v5
