@@ -116,14 +116,14 @@ jobs:
 
       - name: Upload artifacts for debugging
         if: always()
+        continue-on-error: true  # quota hits here must not fail the whole run
         uses: actions/upload-artifact@v4
         with:
           name: run-${{ github.run_id }}
           path: |
-            workspace/*/short.mp4
             workspace/*/script.json
             workspace/*/title.json
             workspace/*/subtitles.json
             workspace/*/youtube_url.txt
           if-no-files-found: ignore
-          retention-days: 7
+          retention-days: 2
