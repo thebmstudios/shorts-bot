@@ -19,8 +19,16 @@ Language: {language}
 Forensic findings (patterns to apply, NOT subjects to copy):
 {findings}
 
-Recently covered topics (DO NOT repeat any of these — pick a different subject, even if from the same theme pool):
+Recently covered topics (HARD BAN — read carefully):
 {recent}
+
+SUBJECT-LEVEL DEDUPLICATION (this is the most common failure mode — read twice):
+- The check above is NOT just string matching. If ANY central figure, event, battle, or location from a recent topic also appears in your proposed topic, the topic is REJECTED. Examples of forbidden overlaps:
+  * Recent: "Genghis Khan's death cover-up" → BANNED any new Genghis Khan topic, any Mongol funeral topic, any "burial location secret" topic. Pick a different person.
+  * Recent: "Rasputin assassination" → BANNED any topic featuring Rasputin, Yusupov, or Tsar Nicholas II's inner circle.
+  * Recent: "Battle of Manzikert 1071" → BANNED any topic about Romanos IV, Alp Arslan, or Manzikert (even from a different angle).
+- Rephrasing the same story with new wording is the #1 way this rule gets broken. Do not do it. If your draft topic shares the central NAMED PERSON or NAMED EVENT with anything in the recent list, throw it out and pick a fresh subject.
+- "Same era, different person" is fine. "Same person, different angle" is NOT fine.
 
 Recently used pools (count of last 10 videos by region/empire):
 {pool_counts}
@@ -34,15 +42,26 @@ POOL COOLDOWN — HARD RULE:
 
 FORMAT DIVERSITY — HARD RULE:
 - Do NOT repeat the format of the last video. Rotate.
-- The 8 formats this channel uses (pick ONE that did NOT appear in the last 3):
+- Formats are split into TWO categories with target mix 55% history-leaning / 45% lived-stories:
+
+  HISTORY-LEANING formats (~55% of all videos — empires, rulers, battles, classical history):
   1. "violent-ruler"     — emperor/sultan/khan personal cruelty + body counts
   2. "decisive-battle"   — single battle that changed history (tactics, betrayal, casualties)
   3. "underdog-victory"  — outnumbered force wins (Thermopylae, Agincourt, Stalingrad-style)
-  4. "cover-up-mystery"  — disappearance, faked death, lost treasure, censored event
-  5. "invention-shock"   — discovery/invention with a dark twist (mercury cures, lobotomy, gunpowder)
-  6. "forgotten-woman"   — overlooked female figure who changed events (Boudica, Tomyris, Trotula, Hatshepsut)
+  4. "forgotten-woman"   — overlooked female figure who changed events (Boudica, Tomyris, Trotula, Hatshepsut)
+
+  LIVED-STORIES formats (~45% of all videos — true stories of real people, mysteries, survivals, weird realities):
+  5. "cover-up-mystery"  — disappearance, faked death, lost treasure, censored event
+  6. "invention-shock"   — discovery/invention with a dark twist (mercury cures, lobotomy, gunpowder)
   7. "survival-escape"   — captivity/escape/lone-survivor story (Shackleton, Hugh Glass, Witold Pilecki)
   8. "strange-tradition" — bizarre ritual/practice that actually existed (sky burials, mellified man)
+
+55/45 BALANCE — HARD RULE:
+- Look at "Recently used story formats" below. Count how many of the last 10 fall into HISTORY-LEANING vs LIVED-STORIES.
+- Target distribution over the last 10 videos: 5-6 history-leaning, 4-5 lived-stories.
+- If history-leaning is at 7+ in the last 10 → THIS run MUST pick a lived-stories format.
+- If lived-stories is at 6+ in the last 10 → THIS run MUST pick a history-leaning format.
+- Otherwise, prefer whichever side is currently under-represented relative to the 55/45 target.
 
 PREFERRED TOPIC POOLS — ~70% of topics MUST come from these regions/themes (the channel's identity):
 

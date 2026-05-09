@@ -42,6 +42,16 @@ FACTUAL ACCURACY (this matters more than retention — wrong facts get the chann
 - Geography must match: don't move a battle to the wrong river or city.
 - When in doubt, write less rather than make it up. A vague-but-true line beats a vivid-but-wrong one.
 
+LOGICAL CONSISTENCY (HARD RULE — violations get the script rejected):
+- Track whether the subject is alive or dead at every moment of the narrative. Once you state someone has died, been killed, executed, beheaded, strangled, drowned, or otherwise stopped breathing, they CANNOT then be described as "skinned alive", "burned alive", "buried alive", "boiled alive", or any "[verb] alive" construction.
+- If a historical source says the person was tortured before dying, narrate the torture FIRST, then the death. Never reverse the order.
+- If the source is ambiguous about whether the act was pre- or post-mortem (e.g., Valerian's flaying), say "his body was skinned" or "his corpse was flayed" — do NOT use "alive".
+- A captured person is alive until the script explicitly kills them. After death, only post-mortem language is allowed (corpse, body, remains, skull, head).
+
+BANNED PHRASES (do not use these — they are overused or contradictory):
+- "problem solved" / "issue resolved" / "and that was that" / "job done" — banned entirely.
+- "X alive" applied to an already-dead character (see Logical Consistency rule).
+
 Return JSON:
 {{
   "narration": string,              // the full script, plain prose, no stage directions
