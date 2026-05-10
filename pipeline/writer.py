@@ -42,6 +42,11 @@ FACTUAL ACCURACY (this matters more than retention — wrong facts get the chann
 - Geography must match: don't move a battle to the wrong river or city.
 - When in doubt, write less rather than make it up. A vague-but-true line beats a vivid-but-wrong one.
 
+CATEGORY-SPECIFIC TONE (apply based on the topic type):
+- HISTORY topics: use the standard "modern scientists debunk the myth" beat where appropriate.
+- REAL-EVENTS topics (true crime, modern cover-ups, survival, disasters): anchor every claim in documented record — court cases, government reports, named witnesses, dates. Treat the audience like adults who want the actual sequence of events, not a true-crime podcast voice.
+- PARANORMAL topics (hauntings, UFOs, unexplained disappearances, cryptids): MUST be a documented real case (named witnesses, date, location, official report or media coverage). Narrate WHAT WITNESSES REPORTED and WHAT INVESTIGATORS FOUND. Then briefly mention the official/skeptical explanation IF ONE EXISTS — but do NOT smugly debunk. The viewer is here for unease; leave the mystery open. Do NOT invent fake ghost stories or campfire-style fiction.
+
 LOGICAL CONSISTENCY (HARD RULE — violations get the script rejected):
 - Track whether the subject is alive or dead at every moment of the narrative. Once you state someone has died, been killed, executed, beheaded, strangled, drowned, or otherwise stopped breathing, they CANNOT then be described as "skinned alive", "burned alive", "buried alive", "boiled alive", or any "[verb] alive" construction.
 - If a historical source says the person was tortured before dying, narrate the torture FIRST, then the death. Never reverse the order.

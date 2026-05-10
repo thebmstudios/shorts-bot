@@ -13,8 +13,15 @@ You MUST avoid repeating subjects, figures, or events that appear in the "Recent
 You MUST also vary the POOL (region/empire) and FORMAT (story type) — channels die when every video feels the same.
 Output MUST be JSON only."""
 
-USER = """Propose ONE fresh, high-potential {niche} topic for our next 60-second Short.
+USER = """Propose ONE fresh, high-potential topic for our next 60-second Short.
 Language: {language}
+
+This channel covers THREE equally-weighted content categories on strict rotation:
+  A) HISTORY     — empires, rulers, battles, dynasties, classical events (verified history)
+  B) REAL-EVENTS — true real-life events from modern era: survivals, crimes, cover-ups,
+                   discoveries, disasters, escapes, true stories that actually happened
+  C) PARANORMAL  — real-world unexplained / paranormal cases: hauntings, UFO incidents,
+                   unexplained disappearances, cryptid sightings, occult/cult events
 
 Forensic findings (patterns to apply, NOT subjects to copy):
 {findings}
@@ -23,86 +30,95 @@ Recently covered topics (HARD BAN — read carefully):
 {recent}
 
 SUBJECT-LEVEL DEDUPLICATION (this is the most common failure mode — read twice):
-- The check above is NOT just string matching. If ANY central figure, event, battle, or location from a recent topic also appears in your proposed topic, the topic is REJECTED. Examples of forbidden overlaps:
-  * Recent: "Genghis Khan's death cover-up" → BANNED any new Genghis Khan topic, any Mongol funeral topic, any "burial location secret" topic. Pick a different person.
-  * Recent: "Rasputin assassination" → BANNED any topic featuring Rasputin, Yusupov, or Tsar Nicholas II's inner circle.
-  * Recent: "Battle of Manzikert 1071" → BANNED any topic about Romanos IV, Alp Arslan, or Manzikert (even from a different angle).
-- Rephrasing the same story with new wording is the #1 way this rule gets broken. Do not do it. If your draft topic shares the central NAMED PERSON or NAMED EVENT with anything in the recent list, throw it out and pick a fresh subject.
-- "Same era, different person" is fine. "Same person, different angle" is NOT fine.
+- The check above is NOT just string matching. If ANY central figure, event, battle, or location from a recent topic also appears in your proposed topic, the topic is REJECTED. Examples:
+  * Recent: "Genghis Khan's death cover-up" → BANNED any new Genghis Khan topic.
+  * Recent: "Rasputin assassination" → BANNED any topic featuring Rasputin or Yusupov.
+  * Recent: "Battle of Manzikert 1071" → BANNED any topic about Romanos IV or Alp Arslan.
+  * Recent: "Dyatlov Pass incident" → BANNED any new Dyatlov topic, even a different angle.
+- Rephrasing the same story with new wording is the #1 way this rule gets broken. Do NOT do it.
+- "Same era, different person" is fine. "Same person/event, different angle" is NOT fine.
 
-Recently used pools (count of last 10 videos by region/empire):
-{pool_counts}
+Recently used categories (last 6 videos, newest first):
+{recent_categories}
 
 Recently used story formats (last 5, newest first):
 {recent_formats}
 
-POOL COOLDOWN — HARD RULE:
-- If any pool above has 3 or more uses in the last 10 videos, that pool is BANNED for this run. Pick a different pool.
-- If a pool has 2 uses, prefer something else unless it's the ONLY untouched relevant option.
+CATEGORY ROTATION — HARD RULE (most important rule on this page):
+- The 3 categories MUST rotate strictly: A → B → C → A → B → C ...
+- Look at the LAST category fired (top of the list above). THIS run MUST pick a DIFFERENT category.
+- If the last category was HISTORY → THIS run picks REAL-EVENTS or PARANORMAL.
+- If the last category was REAL-EVENTS → THIS run picks PARANORMAL or HISTORY.
+- If the last category was PARANORMAL → THIS run picks HISTORY or REAL-EVENTS.
+- Across the last 6 videos, all 3 categories MUST appear at least once. If any category is missing from the last 6, you MUST pick that missing category this run.
+- Equal long-run mix target: 1/3 HISTORY, 1/3 REAL-EVENTS, 1/3 PARANORMAL.
 
-FORMAT DIVERSITY — HARD RULE:
-- Do NOT repeat the format of the last video. Rotate.
-- Formats are split into TWO categories with target mix 55% history-leaning / 45% lived-stories:
+FORMAT MENU (12 formats, 4 per category — pick exactly one):
 
-  HISTORY-LEANING formats (~55% of all videos — empires, rulers, battles, classical history):
-  1. "violent-ruler"     — emperor/sultan/khan personal cruelty + body counts
-  2. "decisive-battle"   — single battle that changed history (tactics, betrayal, casualties)
-  3. "underdog-victory"  — outnumbered force wins (Thermopylae, Agincourt, Stalingrad-style)
-  4. "forgotten-woman"   — overlooked female figure who changed events (Boudica, Tomyris, Trotula, Hatshepsut)
+  CATEGORY A — HISTORY:
+  1. "violent-ruler"            — emperor/sultan/khan personal cruelty + body counts
+  2. "decisive-battle"          — single battle that changed history (tactics, betrayal, casualties)
+  3. "underdog-victory"         — outnumbered force wins (Thermopylae, Agincourt, Stalingrad-style)
+  4. "forgotten-woman"          — overlooked female figure who changed events (Boudica, Tomyris, Hatshepsut)
 
-  LIVED-STORIES formats (~45% of all videos — true stories of real people, mysteries, survivals, weird realities):
-  5. "cover-up-mystery"  — disappearance, faked death, lost treasure, censored event
-  6. "invention-shock"   — discovery/invention with a dark twist (mercury cures, lobotomy, gunpowder)
-  7. "survival-escape"   — captivity/escape/lone-survivor story (Shackleton, Hugh Glass, Witold Pilecki)
-  8. "strange-tradition" — bizarre ritual/practice that actually existed (sky burials, mellified man)
+  CATEGORY B — REAL-EVENTS:
+  5. "survival-escape"          — captivity/escape/lone-survivor story (Shackleton, Hugh Glass, Aron Ralston, Juliane Koepcke)
+  6. "true-crime"               — real criminal cases (Zodiac, D.B. Cooper, Tylenol murders, the Iceman, Belle Gunness)
+  7. "modern-coverup"           — government/corporate cover-ups (MK-Ultra, Tuskegee, Tonkin, Watergate, Bhopal)
+  8. "discovery-disaster"       — true discovery/invention/disaster with dark twist (radium girls, Chernobyl, Therac-25, Bhopal)
 
-55/45 BALANCE — HARD RULE:
-- Look at "Recently used story formats" below. Count how many of the last 10 fall into HISTORY-LEANING vs LIVED-STORIES.
-- Target distribution over the last 10 videos: 5-6 history-leaning, 4-5 lived-stories.
-- If history-leaning is at 7+ in the last 10 → THIS run MUST pick a lived-stories format.
-- If lived-stories is at 6+ in the last 10 → THIS run MUST pick a history-leaning format.
-- Otherwise, prefer whichever side is currently under-represented relative to the 55/45 target.
+  CATEGORY C — PARANORMAL:
+  9. "haunting-case"            — verified haunted house / poltergeist case (Enfield, Amityville, Bell Witch, Borley Rectory, Smurl)
+  10. "ufo-encounter"           — documented UFO incidents (Roswell, Phoenix Lights, Rendlesham, Tic Tac, Travis Walton, Westall)
+  11. "unexplained-disappearance" — paranormal-tinged vanishings (Dyatlov Pass, Flight 19, Bermuda Triangle, Roanoke, Missing 411, MH370)
+  12. "occult-cryptid"          — cryptid sightings, occult / curse / cult events (Mothman, Skinwalker Ranch, Hexham Heads, Tunguska, Heaven's Gate)
 
-PREFERRED TOPIC POOLS — ~70% of topics MUST come from these regions/themes (the channel's identity):
+DIVERSITY WITHIN A CATEGORY:
+- HISTORY: do NOT default to Rome or Ottoman every time. The recent topic list shows what's been overused — actively pick OTHER regions: China, Russia, Japan, Korea, India, Africa, South America, Persia, pre-Columbian, Vikings, Celts, etc. If the last 4 history videos were all Rome/Byzantine/Ottoman, this one MUST be from a different region.
+- REAL-EVENTS: span 19th-21st century, global. Don't keep returning to WW2 only.
+- PARANORMAL: span the full canon. Don't default to UFO only — rotate hauntings, disappearances, cryptids, occult.
 
-TURKIC & OTTOMAN (strong emphasis):
-- Turkic/Central Asian empires: Xiongnu, Göktürks, Seljuks, Timurids, Mongols (Genghis Khan, Modu Chanyu/Mete Han, Attila, Timur, Bumin Qaghan, Tughril, Alp Arslan)
-- Ottoman Empire: sultans, sieges, Janissaries, naval battles, harem intrigue, conquests, collapse (Mehmed II, Suleiman, Selim, Murad, Roxelana, Sinan, Barbarossa)
-- East Turkestan (Uyghur history, Dzungar genocide, Qing conquest, Kashgar, Silk Road Turkic kingdoms)
-
-ROME: republic crises, emperors (famous AND obscure), legions, gladiators, plagues, late-empire collapse, Byzantine offshoots.
-
-GREAT BATTLES & MILITARY HISTORY: Gaugamela, Cannae, Manzikert, Ankara, Varna, Mohács, Vienna, Lepanto, Trafalgar, Waterloo, Gallipoli, Verdun, Stalingrad, Kursk, Midway, Inchon, lesser-known decisive clashes.
-
-MAJOR NATIONAL HISTORIES (draw from any):
-- China: dynasties (Qin, Han, Tang, Song, Ming, Qing), warlords, Taiping, Boxer, Cultural Revolution, forgotten emperors
-- Russia: Tsars, Rurik, Ivan the Terrible, Peter, Catherine, Rasputin-era, Stalin, gulags, Cold War
-- Japan: samurai, shoguns, Sengoku, Meiji Restoration, WWII (Pearl Harbor, Midway, kamikaze, Nanking), emperors
-- North & South Korea: Three Kingdoms, Joseon, Japanese occupation, Korean War, DMZ, Kim dynasty
-- Germany: Holy Roman Empire, Prussia, Bismarck, Weimar, Third Reich, Stasi, Berlin Wall
-- England/UK: Tudors, Stuarts, Elizabeth I, empire, Churchill, WWII, Cromwell, Napoleon-era
-- France: Gauls, Franks, Crusades, Louis XIV, Revolution, Napoleon, WWII resistance
-- America/USA: founding, Civil War, presidents, frontier, WWII, Cold War, CIA operations, forgotten conflicts
-- Greece: Mycenaean, Persian Wars, Peloponnesian, Alexander, Hellenistic, Byzantine
-
-~30% OTHER: any history worth telling — Africa, South America, India, Southeast Asia, Middle East beyond Ottoman, inventors, plagues, disasters, cover-ups, mysteries.
-
-Diversity rules:
-- If the last 5 topics all came from the same country/empire, deliberately pick a different one
-- Within a region, pick a different figure/era than the last one from that region
-- Specific > vague: "Mete Han's wedge formation at the Battle of Baideng 200 BC" beats "Ancient Turkic warfare"
-- Hook on the darkest/weirdest angle, not the textbook summary
+GENERAL RULES:
+- Specific > vague: "Mete Han's wedge formation at Baideng 200 BC" beats "Ancient Turkic warfare". "The Tic Tac UFO encounter, USS Nimitz 2004" beats "Famous UFO sightings."
+- Hook on the darkest/weirdest angle, not the textbook summary.
+- For PARANORMAL: anchor in REAL DOCUMENTED cases (police reports, military records, named witnesses, dates). Do NOT make up fake stories. The angle is "this actually happened and nobody can explain it" — never "here is a scary fictional tale."
 
 Return JSON:
 {{
   "topic": string,                  // 1-line topic specific enough to script (include names/dates)
   "angle": string,                  // the hook/angle that differentiates it
   "why": string,                    // why this will beat competitors
-  "pool": string,                   // turkic-ottoman / east-turkestan / rome / byzantine / great-battle / china / russia / japan / korea / germany / uk / france / usa / greece / other
-  "format": string,                 // one of: violent-ruler / decisive-battle / underdog-victory / cover-up-mystery / invention-shock / forgotten-woman / survival-escape / strange-tradition
+  "category": string,               // EXACTLY one of: history / real-events / paranormal
+  "format": string,                 // one of the 12 format slugs above
+  "pool": string,                   // for history: turkic-ottoman/rome/byzantine/china/russia/japan/korea/germany/uk/france/usa/greece/other ; for real-events: survival/true-crime/coverup/disaster ; for paranormal: haunting/ufo/disappearance/cryptid-occult
   "era": string,                    // ancient/medieval/early-modern/industrial/20th/contemporary
   "region": string                  // Asia/Europe/Africa/Americas/Middle-East/Oceania
 }}"""
+
+
+# Maps each format slug to its parent category. Single source of truth used by
+# both the rotation logger and (implicitly) for any future analytics.
+FORMAT_TO_CATEGORY: dict[str, str] = {
+    # history
+    "violent-ruler": "history",
+    "decisive-battle": "history",
+    "underdog-victory": "history",
+    "forgotten-woman": "history",
+    # real-events
+    "survival-escape": "real-events",
+    "true-crime": "real-events",
+    "modern-coverup": "real-events",
+    "discovery-disaster": "real-events",
+    # paranormal
+    "haunting-case": "paranormal",
+    "ufo-encounter": "paranormal",
+    "unexplained-disappearance": "paranormal",
+    "occult-cryptid": "paranormal",
+    # legacy formats kept for backward-compat with existing topic_meta.json
+    "cover-up-mystery": "real-events",
+    "invention-shock": "real-events",
+    "strange-tradition": "real-events",
+}
 
 
 HISTORY_FILE_REL = "pipeline/topic_history.json"
@@ -211,9 +227,9 @@ def append_topic_to_history(root: Path, topic: str) -> None:
 
 
 def append_topic_metadata(
-    root: Path, topic: str, pool: str, fmt: str
+    root: Path, topic: str, pool: str, fmt: str, category: str = ""
 ) -> None:
-    """Append {topic, pool, format} to the parallel metadata log."""
+    """Append {topic, pool, format, category} to the parallel metadata log."""
     meta_file = root / META_FILE_REL
     log: list[dict[str, str]] = []
     if meta_file.exists():
@@ -223,7 +239,16 @@ def append_topic_metadata(
                 log = [d for d in data if isinstance(d, dict)]
         except Exception:
             pass
-    log.append({"topic": topic.strip(), "pool": pool or "other", "format": fmt or ""})
+    # Derive category from format if caller didn't pass one.
+    cat = (category or "").strip().lower()
+    if not cat:
+        cat = FORMAT_TO_CATEGORY.get(fmt, "history")
+    log.append({
+        "topic": topic.strip(),
+        "pool": pool or "other",
+        "format": fmt or "",
+        "category": cat,
+    })
     log = log[-200:]
     meta_file.parent.mkdir(parents=True, exist_ok=True)
     meta_file.write_text(json.dumps(log, indent=2), encoding="utf-8")
@@ -282,6 +307,28 @@ def _build_recent_formats(meta: list[dict[str, str]], window: int = 5) -> str:
     return "\n".join(f"- {f}" for f in recent)
 
 
+def _build_recent_categories(meta: list[dict[str, str]], window: int = 6) -> str:
+    """Show last `window` categories (newest first), inferred from format if absent."""
+    if not meta:
+        return "(none)"
+    recent = meta[-window:]
+    rows: list[str] = []
+    for entry in reversed(recent):  # newest first
+        cat = (entry.get("category") or "").strip()
+        if not cat:
+            fmt = (entry.get("format") or "").strip()
+            cat = FORMAT_TO_CATEGORY.get(fmt, "history")  # legacy default
+        rows.append(f"- {cat}")
+    # Also show which categories are MISSING from the window — drives the
+    # "must pick missing category" rule.
+    seen = {(entry.get("category") or FORMAT_TO_CATEGORY.get(entry.get("format", ""), "history"))
+            for entry in recent}
+    missing = [c for c in ("history", "real-events", "paranormal") if c not in seen]
+    if missing:
+        rows.append(f"** MISSING from last {window} (you MUST pick one of these): {', '.join(missing)} **")
+    return "\n".join(rows)
+
+
 def choose_topic(settings: Settings, findings: dict[str, Any]) -> dict[str, Any]:
     recent = _load_recent_topics(settings.root, settings.workspace_dir)
     if recent:
@@ -289,17 +336,16 @@ def choose_topic(settings: Settings, findings: dict[str, Any]) -> dict[str, Any]
     else:
         recent_block = "(no prior topics)"
     meta = _load_recent_metadata(settings.root)
-    pool_counts = _build_pool_counts(meta, window=10)
+    recent_categories = _build_recent_categories(meta, window=6)
     recent_formats = _build_recent_formats(meta, window=5)
     return call_json(
         settings,
         SYSTEM.format(niche=settings.niche),
         USER.format(
-            niche=settings.niche,
             language=settings.language,
             findings=json.dumps(findings, indent=2),
             recent=recent_block,
-            pool_counts=pool_counts,
+            recent_categories=recent_categories,
             recent_formats=recent_formats,
         ),
         max_tokens=900,

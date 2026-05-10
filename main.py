@@ -159,6 +159,7 @@ def main() -> None:
             chosen_topic["topic"],
             pool=str(chosen_topic.get("pool", "")).strip() or topic_mod._infer_pool(chosen_topic["topic"]),
             fmt=str(chosen_topic.get("format", "")).strip(),
+            category=str(chosen_topic.get("category", "")).strip(),
         )
         print(f"[history] appended topic + metadata")
     except Exception as e:
