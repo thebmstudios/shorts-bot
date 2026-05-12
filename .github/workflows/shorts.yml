@@ -2,18 +2,19 @@ name: Daily Shorts
 
 on:
   schedule:
-    # Americas-focused windows. All-English subtitles for every slot.
-    # GHA cron is best-effort; the external scheduler (cron-job.org) is the
-    # primary trigger via repository_dispatch. Times chosen for year-round
-    # coverage (works in both EST and EDT).
-    # 17:00 UTC = 20:00 TR / 12:00 EST / 09:00 PST -> US East lunch + West morning
-    # 22:00 UTC = 01:00 TR / 17:00 EST / 14:00 PST / 19:00 BRT -> US after-work + Brazil prime
-    # 01:00 UTC = 04:00 TR / 20:00 EST / 17:00 PST / 22:00 BRT -> US East prime + West after-work + Brazil late
-    # 04:00 UTC = 07:00 TR / 23:00 EST / 20:00 PST -> US East late + West prime evening
-    - cron: "0 17 * * *"
-    - cron: "0 22 * * *"
-    - cron: "0 1 * * *"
-    - cron: "0 4 * * *"
+    # US-EASTERN-TIME optimized schedule (currently EDT / UTC-4; summer).
+    # Each cron is the algorithm-prime swipe window for US Shorts audience.
+    # NOTE: GH cron is UTC; these will shift +1h when DST ends in November
+    # (then they become 7:30 AM / 1 PM / 8 PM / 10:30 PM ET). Acceptable drift.
+    #
+    # 10:30 UTC = 06:30 ET (EDT)  -> US East-coast morning swipe
+    # 16:00 UTC = 12:00 ET (EDT)  -> US national lunch window
+    # 23:00 UTC = 19:00 ET (EDT)  -> US pre-prime ramp
+    # 01:30 UTC = 21:30 ET (EDT)  -> HERO slot, peak US Shorts traffic
+    - cron: "30 10 * * *"
+    - cron: "0 16 * * *"
+    - cron: "0 23 * * *"
+    - cron: "30 1 * * *"
   workflow_dispatch:        # allows manual trigger from the Actions tab
   repository_dispatch:
     # Triggered by external scheduler (cron-job.org). All slots English.

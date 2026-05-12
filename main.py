@@ -90,7 +90,8 @@ def main() -> None:
     print(f"   title: {final_title}")
 
     print("[5/7] Writing script...")
-    script = writer.write_script(settings, final_title, findings)
+    story_arc = str(chosen_topic.get("story_arc", "")).strip() or "hidden-truth"
+    script = writer.write_script(settings, final_title, findings, story_arc=story_arc)
     (run_dir / "script.json").write_text(json.dumps(script, indent=2), encoding="utf-8")
 
     print("[6/8] Synthesizing voice + subtitles...")
@@ -160,6 +161,7 @@ def main() -> None:
             pool=str(chosen_topic.get("pool", "")).strip() or topic_mod._infer_pool(chosen_topic["topic"]),
             fmt=str(chosen_topic.get("format", "")).strip(),
             category=str(chosen_topic.get("category", "")).strip(),
+            story_arc=str(chosen_topic.get("story_arc", "")).strip(),
         )
         print(f"[history] appended topic + metadata")
     except Exception as e:

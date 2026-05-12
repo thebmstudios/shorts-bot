@@ -16,22 +16,54 @@ Apply the provided forensic patterns faithfully.
 Output MUST be JSON only."""
 
 USER = """Title: {title}
+Story arc to follow: {story_arc}
 Language: {language}
-Target duration: 55-60 seconds when read aloud at NATURAL narration pace.
-Write 120-135 words total (strict).
+Target audience: United States (Eastern Time mainstream)
+Target duration: 32-38 seconds when read aloud at NATURAL narration pace.
+Write 75-95 words total (strict).
 
 Forensic patterns to apply:
 {findings}
 
-Rules:
-- Open with a hook in the first sentence (<= 10 words) that creates an information gap.
-- Body: deliver the payoff with 4-6 tight beats, concrete names, dates, numbers, visual details.
-- Include at least one "here's the crazy part" / "but here's where it gets worse" escalation pivot.
-- Close: a surprising final line that makes viewers rewatch or comment.
+THE 3-SECOND HOOK FORMULA (mandatory structure for sentences[0..2]):
+The first 3 lines of the script MUST follow this exact shape — the algorithm
+measures retention at second 1 and second 3, and this hook formula targets both.
+
+  sentences[0] = "STOP-WORD HOOK" — 4-6 word fragment, all uppercase if the TTS
+                 supports caps, otherwise punchy short line. This line is also
+                 what burns on screen as text overlay for the first ~1.5s.
+                 Example: "HE WOULDN'T DIE." / "NINE BODIES. NO ANSWER."
+                 Example: "NOBODY SURVIVED HIS ROOM."
+
+  sentences[1] = "CONFIRMATION + STAKE" — 6-10 words. Names the actual subject
+                 OR confirms the stakes are real. Lands around 1.5s-3s.
+                 Example: "Rome's emperor. Captured alive in 260 AD."
+                 Example: "Nine experienced climbers, all gone in one night."
+
+  sentences[2] = "UNRESOLVED DETAIL" — 6-12 words. Introduces ONE specific
+                 detail that the viewer cannot resolve without watching to the
+                 end. This is the curiosity-gap anchor.
+                 Example: "What investigators found made them seal the file."
+                 Example: "And the eighth doctor knew exactly what would happen."
+
+Then sentences[3..N-1] = the body (concrete beats, named entities, dates,
+numbers, visual details). 3-5 short body beats.
+
+THE LOOP CLOSE (mandatory for the last sentence):
+  sentences[-1] = a line that calls BACK to sentences[0]'s stop-word so that
+                  a viewer who reaches the end is pulled into watching the
+                  first frame again. Make the last line answer the wrong
+                  question — leave the viewer wanting to re-check the open.
+                  Example open: "NOBODY SURVIVED HIS ROOM."
+                  Example close: "...and the room is still standing today."
+
+General rules:
 - No filler ("in this video", "today we will"). No self-reference.
-- Short, punchy sentences. Active voice.
-- MUST be 120-135 words — count them. Not less, not more.
+- Short, punchy sentences. Active voice. Past tense for events.
+- MUST be 75-95 words total — count them.
 - Language = {language}.
+- US audience: spell out non-English names phonetically only if needed;
+  prefer English equivalents for places ("Constantinople" not "Konstantiniyye").
 
 FACTUAL ACCURACY (this matters more than retention — wrong facts get the channel flagged):
 - Every named person, place, battle, or date you mention MUST be directly part of THIS topic's actual events. No exceptions.
@@ -73,12 +105,18 @@ CRITICAL — b_roll_keywords rules (this drives image search; bad keywords = wro
 - Order matters: most-central entity first."""
 
 
-def write_script(settings: Settings, title: str, findings: dict[str, Any]) -> dict[str, Any]:
+def write_script(
+    settings: Settings,
+    title: str,
+    findings: dict[str, Any],
+    story_arc: str = "shock-escalation",
+) -> dict[str, Any]:
     return call_json(
         settings,
         SYSTEM.format(niche=settings.niche),
         USER.format(
             title=title,
+            story_arc=story_arc,
             language=settings.language,
             findings=json.dumps(findings, indent=2),
         ),

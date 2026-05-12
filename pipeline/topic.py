@@ -13,15 +13,28 @@ You MUST avoid repeating subjects, figures, or events that appear in the "Recent
 You MUST also vary the POOL (region/empire) and FORMAT (story type) — channels die when every video feels the same.
 Output MUST be JSON only."""
 
-USER = """Propose ONE fresh, high-potential topic for our next 60-second Short.
+USER = """Propose ONE fresh, high-potential topic for our next 35-second US-audience Short.
 Language: {language}
 
-This channel covers THREE equally-weighted content categories on strict rotation:
-  A) HISTORY     — empires, rulers, battles, dynasties, classical events (verified history)
-  B) REAL-EVENTS — true real-life events from modern era: survivals, crimes, cover-ups,
-                   discoveries, disasters, escapes, true stories that actually happened
-  C) PARANORMAL  — real-world unexplained / paranormal cases: hauntings, UFO incidents,
-                   unexplained disappearances, cryptid sightings, occult/cult events
+This channel rotates through FIVE distinct STORY ARCS and three content
+categories. Both rotations are enforced strictly.
+
+CONTENT CATEGORIES (long-run target 1/3 each):
+  A) HISTORY     — empires, rulers, battles, dynasties, classical events
+  B) REAL-EVENTS — true modern-era events: survivals, true-crime, cover-ups, disasters
+  C) PARANORMAL  — documented unexplained: hauntings, UFOs, disappearances, cryptids
+
+STORY ARCS (5 templates — pick exactly one):
+  1) "unsolvable-mystery"  — setup the impossible, witnesses, no explanation exists
+     Hook flavor: "Nine people. One night. Still no answer."
+  2) "improbable-survivor" — impossible odds, the moment, how they walked away
+     Hook flavor: "She fell 10,000 feet. Then it got worse."
+  3) "hidden-truth"        — what you were taught vs what actually happened
+     Hook flavor: "You were taught the wrong story."
+  4) "small-cause-huge-effect" — tiny inciting moment → cascading consequences
+     Hook flavor: "One missed turn killed 16 million people."
+  5) "object-witness"      — an object that still exists, what it saw, what it means now
+     Hook flavor: "This skull cup is still in a museum."
 
 Forensic findings (patterns to apply, NOT subjects to copy):
 {findings}
@@ -41,17 +54,26 @@ SUBJECT-LEVEL DEDUPLICATION (this is the most common failure mode — read twice
 Recently used categories (last 6 videos, newest first):
 {recent_categories}
 
+Recently used story arcs (last 5, newest first):
+{recent_arcs}
+
 Recently used story formats (last 5, newest first):
 {recent_formats}
 
-CATEGORY ROTATION — HARD RULE (most important rule on this page):
-- The 3 categories MUST rotate strictly: A → B → C → A → B → C ...
-- Look at the LAST category fired (top of the list above). THIS run MUST pick a DIFFERENT category.
-- If the last category was HISTORY → THIS run picks REAL-EVENTS or PARANORMAL.
-- If the last category was REAL-EVENTS → THIS run picks PARANORMAL or HISTORY.
-- If the last category was PARANORMAL → THIS run picks HISTORY or REAL-EVENTS.
-- Across the last 6 videos, all 3 categories MUST appear at least once. If any category is missing from the last 6, you MUST pick that missing category this run.
-- Equal long-run mix target: 1/3 HISTORY, 1/3 REAL-EVENTS, 1/3 PARANORMAL.
+CATEGORY ROTATION — HARD RULE:
+- The 3 categories rotate strictly. THIS run MUST pick a category DIFFERENT
+  from the last one fired.
+- Across the last 6 videos, all 3 categories MUST appear at least once. If
+  any category is missing from the last 6, you MUST pick that missing one.
+- Long-run target: 1/3 HISTORY, 1/3 REAL-EVENTS, 1/3 PARANORMAL.
+
+STORY ARC ROTATION — HARD RULE:
+- Pick ONE arc from the 5 listed above (unsolvable-mystery / improbable-survivor /
+  hidden-truth / small-cause-huge-effect / object-witness).
+- You MUST NOT pick the same arc as the most recent video.
+- You SHOULD NOT pick any arc that appears more than once in the last 5 videos.
+- Across the last 5 videos, at least 3 of the 5 arcs MUST appear. If 3+ arcs
+  are missing from the last 5, pick one of the missing arcs.
 
 FORMAT MENU (12 formats, 4 per category — pick exactly one):
 
@@ -83,14 +105,24 @@ GENERAL RULES:
 - Hook on the darkest/weirdest angle, not the textbook summary.
 - For PARANORMAL: anchor in REAL DOCUMENTED cases (police reports, military records, named witnesses, dates). Do NOT make up fake stories. The angle is "this actually happened and nobody can explain it" — never "here is a scary fictional tale."
 
+US AUDIENCE CALIBRATION:
+- The primary audience is American. Prefer subjects that intersect with US
+  history-curiosity: famous emperors (familiar names), WWII, ancient mysteries,
+  US-documented paranormal cases, true crime that made US headlines, lost
+  civilizations, royalty stories that show up in US schools.
+- Lesser-known subjects are great IF the hook is universal (impossible odds,
+  unsolved mystery, surprising twist). Avoid niche local history that requires
+  US viewers to know foreign context.
+
 Return JSON:
 {{
   "topic": string,                  // 1-line topic specific enough to script (include names/dates)
   "angle": string,                  // the hook/angle that differentiates it
-  "why": string,                    // why this will beat competitors
+  "why": string,                    // why this will beat competitors with US viewers
   "category": string,               // EXACTLY one of: history / real-events / paranormal
+  "story_arc": string,              // EXACTLY one of: unsolvable-mystery / improbable-survivor / hidden-truth / small-cause-huge-effect / object-witness
   "format": string,                 // one of the 12 format slugs above
-  "pool": string,                   // for history: turkic-ottoman/rome/byzantine/china/russia/japan/korea/germany/uk/france/usa/greece/other ; for real-events: survival/true-crime/coverup/disaster ; for paranormal: haunting/ufo/disappearance/cryptid-occult
+  "pool": string,                   // history: turkic-ottoman/rome/byzantine/china/russia/japan/korea/germany/uk/france/usa/greece/other ; real-events: survival/true-crime/coverup/disaster ; paranormal: haunting/ufo/disappearance/cryptid-occult
   "era": string,                    // ancient/medieval/early-modern/industrial/20th/contemporary
   "region": string                  // Asia/Europe/Africa/Americas/Middle-East/Oceania
 }}"""
@@ -227,9 +259,14 @@ def append_topic_to_history(root: Path, topic: str) -> None:
 
 
 def append_topic_metadata(
-    root: Path, topic: str, pool: str, fmt: str, category: str = ""
+    root: Path,
+    topic: str,
+    pool: str,
+    fmt: str,
+    category: str = "",
+    story_arc: str = "",
 ) -> None:
-    """Append {topic, pool, format, category} to the parallel metadata log."""
+    """Append {topic, pool, format, category, story_arc} to the parallel metadata log."""
     meta_file = root / META_FILE_REL
     log: list[dict[str, str]] = []
     if meta_file.exists():
@@ -248,6 +285,7 @@ def append_topic_metadata(
         "pool": pool or "other",
         "format": fmt or "",
         "category": cat,
+        "story_arc": (story_arc or "").strip().lower(),
     })
     log = log[-200:]
     meta_file.parent.mkdir(parents=True, exist_ok=True)
@@ -307,6 +345,33 @@ def _build_recent_formats(meta: list[dict[str, str]], window: int = 5) -> str:
     return "\n".join(f"- {f}" for f in recent)
 
 
+ARCS = (
+    "unsolvable-mystery",
+    "improbable-survivor",
+    "hidden-truth",
+    "small-cause-huge-effect",
+    "object-witness",
+)
+
+
+def _build_recent_arcs(meta: list[dict[str, str]], window: int = 5) -> str:
+    """Show last `window` story arcs, newest first, with missing-arc warnings."""
+    if not meta:
+        return "(none)"
+    recent = meta[-window:]
+    rows: list[str] = []
+    seen_arcs: set[str] = set()
+    for entry in reversed(recent):
+        arc = (entry.get("story_arc") or "").strip().lower() or "(unknown)"
+        rows.append(f"- {arc}")
+        if arc and arc != "(unknown)":
+            seen_arcs.add(arc)
+    missing = [a for a in ARCS if a not in seen_arcs]
+    if missing:
+        rows.append(f"** MISSING arcs in last {window} (prefer one of these): {', '.join(missing)} **")
+    return "\n".join(rows)
+
+
 def _build_recent_categories(meta: list[dict[str, str]], window: int = 6) -> str:
     """Show last `window` categories (newest first), inferred from format if absent."""
     if not meta:
@@ -337,6 +402,7 @@ def choose_topic(settings: Settings, findings: dict[str, Any]) -> dict[str, Any]
         recent_block = "(no prior topics)"
     meta = _load_recent_metadata(settings.root)
     recent_categories = _build_recent_categories(meta, window=6)
+    recent_arcs = _build_recent_arcs(meta, window=5)
     recent_formats = _build_recent_formats(meta, window=5)
     return call_json(
         settings,
@@ -346,6 +412,7 @@ def choose_topic(settings: Settings, findings: dict[str, Any]) -> dict[str, Any]
             findings=json.dumps(findings, indent=2),
             recent=recent_block,
             recent_categories=recent_categories,
+            recent_arcs=recent_arcs,
             recent_formats=recent_formats,
         ),
         max_tokens=900,
