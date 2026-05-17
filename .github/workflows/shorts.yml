@@ -81,6 +81,40 @@ jobs:
           printf '%s' "$GOOGLE_TOKEN_JSON" > token.json
           python -c "import json; json.load(open('client_secret.json')); json.load(open('token.json')); print('secrets OK')"
 
+      - name: Pre-check YouTube OAuth token (fail fast if expired)
+        # Catches "invalid_grant: Token has been expired or revoked" BEFORE the
+        # ~15-minute pipeline runs. If this step fails, the only fix is to run
+        # `python reauth.py` locally and update the GOOGLE_TOKEN_JSON secret.
+        run: |
+          python - <<'PY'
+          import sys
+          from google.auth.transport.requests import Request
+          from google.oauth2.credentials import Credentials
+          SCOPES = ["https://www.googleapis.com/auth/youtube.force-ssl"]
+          try:
+              creds = Credentials.from_authorized_user_file("token.json", SCOPES)
+              if not creds.valid:
+                  if creds.expired and creds.refresh_token:
+                      creds.refresh(Request())
+                  else:
+                      raise RuntimeError("Token is not valid and has no refresh_token")
+              print("[oauth-precheck] token OK — refresh works, pipeline can upload.")
+          except Exception as e:
+              print("=" * 70, flush=True)
+              print("[oauth-precheck] FATAL: YouTube OAuth token is dead.", flush=True)
+              print(f"[oauth-precheck] error: {e}", flush=True)
+              print("=" * 70, flush=True)
+              print("FIX (takes 2 minutes):", flush=True)
+              print("  1. On your local machine:  cd C:\\Users\\murat\\Desktop\\yeni && python reauth.py", flush=True)
+              print("  2. Browser opens → log in with the YouTube channel's Google account → Allow.", flush=True)
+              print("  3. Copy the JSON block printed in the terminal.", flush=True)
+              print("  4. https://github.com/thebmstudios/shorts-bot/settings/secrets/actions", flush=True)
+              print("     → GOOGLE_TOKEN_JSON → Update → paste → Save.", flush=True)
+              print("  5. Re-run this workflow.", flush=True)
+              print("=" * 70, flush=True)
+              sys.exit(1)
+          PY
+
       - name: Run pipeline (with 1 auto-retry on failure)
         uses: nick-fields/retry@v3
         with:
