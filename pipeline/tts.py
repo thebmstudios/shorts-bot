@@ -107,14 +107,41 @@ def probe_duration_seconds(mp3_path: Path) -> float:
 # --- Public API ---
 
 
+def pick_voice_for_category(category: str, default: str) -> str:
+    """Map content category -> Edge TTS voice.
+
+    - history     -> en-US-BrianNeural   (authoritative, dramatic — fits
+                                          emperors, battles, classical history)
+    - real-events -> en-US-AndrewNeural  (warm conversational — true crime,
+                                          cover-ups, survivals)
+    - paranormal  -> en-US-AndrewNeural  (intimate storyteller — best for
+                                          unease and "documented case" tone)
+
+    Falls back to `default` (the env-configured voice) if category is unknown.
+    """
+    cat = (category or "").strip().lower()
+    mapping = {
+        "history":     "en-US-BrianNeural",
+        "real-events": "en-US-AndrewNeural",
+        "paranormal":  "en-US-AndrewNeural",
+    }
+    return mapping.get(cat, default)
+
+
 def synthesize_per_sentence(
-    settings: Settings, sentences: List[str], out_dir: Path
+    settings: Settings,
+    sentences: List[str],
+    out_dir: Path,
+    voice_override: str | None = None,
 ) -> tuple[Path, list[dict]]:
     """Synthesize each sentence as its own MP3 with Edge TTS.
     Concatenates into `voice.mp3` and returns (final_mp3, cues_with_exact_timings).
     MP3 frames from same encoder/bitrate can be byte-concatenated safely.
+
+    If `voice_override` is provided, it wins over settings.tts_voice — this is
+    how category-based voice routing in main.py reaches the synthesizer.
     """
-    voice = settings.tts_voice
+    voice = voice_override or settings.tts_voice
     rate = settings.tts_rate
 
     out_dir.mkdir(parents=True, exist_ok=True)

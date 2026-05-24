@@ -95,7 +95,14 @@ def main() -> None:
     (run_dir / "script.json").write_text(json.dumps(script, indent=2), encoding="utf-8")
 
     print("[6/8] Synthesizing voice + subtitles...")
-    voice_path, cues = tts.synthesize_per_sentence(settings, script["sentences"], run_dir)
+    chosen_voice = tts.pick_voice_for_category(
+        str(chosen_topic.get("category", "")).strip(),
+        default=settings.tts_voice,
+    )
+    print(f"   voice: {chosen_voice} (category={chosen_topic.get('category', 'n/a')})")
+    voice_path, cues = tts.synthesize_per_sentence(
+        settings, script["sentences"], run_dir, voice_override=chosen_voice
+    )
     duration = cues[-1]["end"] if cues else 0.0
     print(f"   voice duration ~{duration:.1f}s, {len(cues)} cues")
 
