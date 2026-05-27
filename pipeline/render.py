@@ -40,6 +40,15 @@ def render(
 
     out_mp4.parent.mkdir(parents=True, exist_ok=True)
     npx = shutil.which("npx") or "npx"
+    # Speed flags:
+    #   --concurrency=100% : use every CPU core the runner has (GH free 2-core
+    #                        runners default to single-threaded otherwise).
+    #   --jpeg-quality=80  : slightly faster frame extraction (visually lossless
+    #                        for short-form vertical video).
+    #   --crf=26           : ~30% faster H.264 encode vs Remotion's default 18.
+    #                        At 1080x1920 this is still YouTube-safe quality.
+    #   --x264-preset=fast : ffmpeg encoder preset, cuts encode time ~40% vs
+    #                        the default "medium".
     cmd = [
         npx,
         "remotion",
@@ -49,6 +58,10 @@ def render(
         str(out_mp4),
         f"--props={props_path}",
         "--overwrite",
+        "--concurrency=100%",
+        "--jpeg-quality=80",
+        "--crf=26",
+        "--x264-preset=fast",
     ]
     print(f"[render] {' '.join(cmd)}")
     subprocess.run(cmd, cwd=settings.root, check=True, shell=False)
