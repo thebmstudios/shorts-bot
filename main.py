@@ -138,7 +138,15 @@ def main() -> None:
     print("[8/8] Rendering video...")
     out_mp4 = run_dir / "short.mp4"
     image_rels = visuals.copy_to_public(images, settings.public_dir)
-    render.render(settings, cues, voice_path, out_mp4, duration, image_rels)
+    render.render(
+        settings,
+        cues,
+        voice_path,
+        out_mp4,
+        duration,
+        image_rels,
+        category=str(chosen_topic.get("category", "")).strip(),
+    )
     print(f"   rendered: {out_mp4}")
 
     if args.skip_upload:

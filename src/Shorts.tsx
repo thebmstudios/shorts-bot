@@ -22,6 +22,9 @@ export type ShortsProps = {
   subtitles: Cue[];
   durationSeconds: number;
   images?: string[];
+  // Optional background music track (mixed under the voiceover at low volume).
+  // When undefined or empty, no music is played.
+  musicSrc?: string;
 };
 
 /* --- Ken Burns animated background image --- */
@@ -279,17 +282,33 @@ const IntroBurst: React.FC = () => {
   );
 };
 
-export const Shorts: React.FC<ShortsProps> = ({ voiceSrc, subtitles, images = [] }) => {
+export const Shorts: React.FC<ShortsProps> = ({
+  voiceSrc,
+  subtitles,
+  images = [],
+  musicSrc,
+}) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const now = frame / fps;
   const cue = subtitles.find((c) => now >= c.start && now < c.end);
+
+  // Music fades in over the first 0.4s and fades out over the last 0.6s so
+  // it never cold-starts or hard-cuts. Voice stays at full volume.
+  const totalSec = durationInFrames / fps;
+  const musicVolume = (() => {
+    if (!musicSrc) return 0;
+    const fadeIn = Math.min(1, now / 0.4);
+    const fadeOut = Math.min(1, Math.max(0, (totalSec - now) / 0.6));
+    return 0.13 * fadeIn * fadeOut;
+  })();
 
   return (
     <AbsoluteFill style={{ backgroundColor: "#000" }}>
       <ImageStage images={images} cues={subtitles} frame={frame} fps={fps} />
       <Particles count={20} />
       <IntroBurst />
+      {musicSrc ? <Audio src={staticFile(musicSrc)} volume={musicVolume} /> : null}
       <Audio src={staticFile(voiceSrc)} />
       {cue && <Caption cue={cue} frame={frame} fps={fps} />}
       <ProgressBar frame={frame} totalFrames={durationInFrames} />

@@ -115,9 +115,12 @@ Return JSON with this EXACT schema:
                                    //   from the title — punchier, scarier,
                                    //   more visual. Example: "HE WOULDN'T DIE."
                                    //   or "9 BODIES. NO ANSWER."
-  "description": string,           // 1-2 sentences, ends with 4-6 hashtags
-                                   //   relevant to US history Shorts audience
-                                   //   (#history #shorts #usa #didyouknow etc.)
+  "description": string,           // 1-2 sentences + 4-6 hashtags + ON ITS
+                                   //   OWN LINE at the end the EXACT credit:
+                                   //   "Music: Kevin MacLeod (incompetech.com)
+                                   //   — Licensed under CC BY 4.0"
+                                   //   (the music is licensed CC-BY so this
+                                   //   credit MUST appear verbatim).
   "tags": [string, ...]            // 10-15 YouTube tags
 }}"""
 
