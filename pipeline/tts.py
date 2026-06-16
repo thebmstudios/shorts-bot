@@ -13,16 +13,35 @@ import edge_tts
 from .config import Settings
 
 
-async def _synth_one_async(voice: str, rate: str, text: str, out_path: Path) -> Path:
-    communicate = edge_tts.Communicate(text, voice, rate=rate)
+async def _synth_one_async(
+    voice: str, rate: str, text: str, out_path: Path
+) -> list[dict]:
+    """Synthesize one sentence AND capture per-word timing for karaoke subs.
+
+    Returns a list of {"text": "Word", "offset": float_sec_from_sentence_start,
+    "duration": float_sec}. If the Edge TTS server skips WordBoundary events
+    (rare), returns []; the caller will fall back to even-distribution timing.
+    """
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    await communicate.save(str(out_path))
-    return out_path
+    communicate = edge_tts.Communicate(text, voice, rate=rate)
+    words: list[dict] = []
+    with open(out_path, "wb") as f:
+        async for chunk in communicate.stream():
+            ct = chunk.get("type")
+            if ct == "audio":
+                f.write(chunk["data"])
+            elif ct == "WordBoundary":
+                # Edge sends offset/duration in 100-ns ticks.
+                words.append({
+                    "text": str(chunk.get("text", "")),
+                    "offset": chunk["offset"] / 10_000_000,
+                    "duration": chunk["duration"] / 10_000_000,
+                })
+    return words
 
 
-def _synth_one(voice: str, rate: str, text: str, out_path: Path) -> Path:
-    asyncio.run(_synth_one_async(voice, rate, text, out_path))
-    return out_path
+def _synth_one(voice: str, rate: str, text: str, out_path: Path) -> list[dict]:
+    return asyncio.run(_synth_one_async(voice, rate, text, out_path))
 
 
 # --- MP3 duration probe (no external ffmpeg) ---
@@ -154,13 +173,36 @@ def synthesize_per_sentence(
     with open(combined, "wb") as out_f:
         for idx, sentence in enumerate(sentences):
             part_path = parts_dir / f"{idx:03d}.mp3"
-            _synth_one(voice, rate, sentence, part_path)
+            sentence_words = _synth_one(voice, rate, sentence, part_path)
             dur = probe_duration_seconds(part_path)
+            # Convert per-sentence word offsets -> absolute timeline offsets
+            # (offset from start of voice.mp3). If WordBoundary stream was
+            # empty (Edge rare-skip case), fabricate even-distribution timing
+            # so the karaoke effect still works.
+            words_abs: list[dict] = []
+            if sentence_words:
+                for w in sentence_words:
+                    words_abs.append({
+                        "text": w["text"],
+                        "start": round(cursor + w["offset"], 3),
+                        "end": round(cursor + w["offset"] + w["duration"], 3),
+                    })
+            else:
+                tokens = sentence.split()
+                if tokens:
+                    per = dur / len(tokens)
+                    for i, tok in enumerate(tokens):
+                        words_abs.append({
+                            "text": tok,
+                            "start": round(cursor + i * per, 3),
+                            "end": round(cursor + (i + 1) * per, 3),
+                        })
             cues.append({
                 "text": sentence,
                 "start": round(cursor, 3),
                 "end": round(cursor + dur, 3),
                 "voice": voice,
+                "words": words_abs,
             })
             cursor += dur
             out_f.write(part_path.read_bytes())

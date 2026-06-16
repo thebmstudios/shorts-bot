@@ -11,10 +11,20 @@ import {
   useVideoConfig,
 } from "remotion";
 
+export type Word = {
+  text: string;
+  start: number;
+  end: number;
+};
+
 export type Cue = {
   text: string;
   start: number;
   end: number;
+  // Per-word timing for karaoke-style word-by-word highlight.
+  // Optional for back-compat with old subtitles.json files; when missing the
+  // Caption renderer falls back to the legacy whole-sentence pop-in.
+  words?: Word[];
 };
 
 export type ShortsProps = {
@@ -163,9 +173,11 @@ const Particles: React.FC<{ count?: number }> = ({ count = 25 }) => {
   );
 };
 
-/* --- Full-sentence subtitle: pop in once, hold, fade out --- */
+/* --- Karaoke-style subtitle: per-word highlight as voice progresses ---
+   Falls back to a whole-sentence pop-in if the cue has no word timing. */
 const Caption: React.FC<{ cue: Cue; frame: number; fps: number }> = ({ cue, frame, fps }) => {
-  const localSec = frame / fps - cue.start;
+  const nowSec = frame / fps;
+  const localSec = nowSec - cue.start;
   const dur = Math.max(0.3, cue.end - cue.start);
 
   const pop = spring({
@@ -173,13 +185,14 @@ const Caption: React.FC<{ cue: Cue; frame: number; fps: number }> = ({ cue, fram
     fps,
     config: { damping: 14, stiffness: 130 },
   });
-  const scale = interpolate(pop, [0, 1], [0.7, 1], { extrapolateRight: "clamp" });
-  const translateY = interpolate(pop, [0, 1], [40, 0], { extrapolateRight: "clamp" });
-  // Build a safe monotonically-increasing input range for any duration.
+  const scale = interpolate(pop, [0, 1], [0.85, 1], { extrapolateRight: "clamp" });
+  const translateY = interpolate(pop, [0, 1], [24, 0], { extrapolateRight: "clamp" });
+
+  // Container opacity: quick fade-in, hold, quick fade-out.
   const inA = 0;
-  const inB = Math.min(0.2, dur * 0.25);
+  const inB = Math.min(0.18, dur * 0.2);
   const inD = dur;
-  const inC = Math.max(inB + 0.001, dur - Math.min(0.25, dur * 0.25));
+  const inC = Math.max(inB + 0.001, dur - Math.min(0.2, dur * 0.2));
   const opacity = interpolate(
     localSec,
     [inA, inB, inC, inD],
@@ -187,30 +200,70 @@ const Caption: React.FC<{ cue: Cue; frame: number; fps: number }> = ({ cue, fram
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
+  const words = cue.words && cue.words.length > 0
+    ? cue.words
+    : null;
+
   return (
-    <AbsoluteFill style={{ justifyContent: "flex-end", alignItems: "center", paddingBottom: 180 }}>
+    <AbsoluteFill
+      style={{ justifyContent: "flex-end", alignItems: "center", paddingBottom: 220 }}
+    >
       <div
         style={{
           transform: `translateY(${translateY}px) scale(${scale})`,
           opacity,
           fontFamily: "Impact, Arial Black, sans-serif",
-          fontSize: 68,
-          lineHeight: 1.08,
+          fontSize: 76,
+          lineHeight: 1.05,
           color: "#fff",
           textAlign: "center",
           textTransform: "uppercase",
-          letterSpacing: 1,
-          maxWidth: 900,
-          padding: "18px 28px",
-          background: "rgba(0,0,0,0.55)",
+          letterSpacing: 1.5,
+          maxWidth: 920,
+          padding: "20px 32px",
+          background: "rgba(0,0,0,0.62)",
           borderRadius: 18,
           textShadow:
             "3px 3px 0 #000, -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000",
-          border: "3px solid rgba(255,216,74,0.85)",
-          boxShadow: "0 8px 40px rgba(0,0,0,0.7)",
+          border: "3px solid rgba(255,216,74,0.9)",
+          boxShadow: "0 8px 40px rgba(0,0,0,0.72)",
+          display: "flex",
+          flexWrap: "wrap",
+          justifyContent: "center",
+          gap: "0 18px",
         }}
       >
-        {cue.text}
+        {words ? (
+          words.map((w, i) => {
+            const isActive = nowSec >= w.start && nowSec < w.end;
+            const wasSpoken = nowSec >= w.end;
+            // Color logic:
+            //  - upcoming word  : muted white (waiting)
+            //  - active word    : bright yellow + slight upscale (popping right now)
+            //  - already spoken : full white (read, settled)
+            const color = isActive ? "#FFD84A" : wasSpoken ? "#FFFFFF" : "rgba(255,255,255,0.55)";
+            const wordScale = isActive ? 1.12 : 1;
+            return (
+              <span
+                key={i}
+                style={{
+                  color,
+                  display: "inline-block",
+                  transform: `scale(${wordScale})`,
+                  transition: "transform 60ms linear, color 60ms linear",
+                  textShadow: isActive
+                    ? "0 0 18px rgba(255,216,74,0.7), 3px 3px 0 #000, -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000"
+                    : "3px 3px 0 #000, -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000",
+                }}
+              >
+                {w.text}
+              </span>
+            );
+          })
+        ) : (
+          // Back-compat fallback: whole sentence, no per-word highlight.
+          <span>{cue.text}</span>
+        )}
       </div>
     </AbsoluteFill>
   );
