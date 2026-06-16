@@ -72,6 +72,9 @@ _LANG_DISPLAY = {
     "es": "Español",
     "de": "Deutsch",
     "fr": "Français",
+    "it": "Italiano",
+    "ko": "한국어",
+    "id": "Bahasa Indonesia",
     "ar": "العربية",
     "hi": "हिन्दी",
     "pt": "Português",
@@ -125,7 +128,15 @@ def upload(
     tags: List[str],
     cues: list[dict] | None = None,
     caption_lang: str = "en",
+    extra_captions: dict[str, list[dict]] | None = None,
 ) -> str:
+    """
+    `cues` -> uploaded as the primary caption track in `caption_lang`.
+    `extra_captions` -> {lang_code: cues_in_that_lang} uploaded as extra
+        caption tracks so a viewer can toggle CC to French/German/etc.
+        Best-effort: a failure on any single language does not block the
+        video URL return.
+    """
     creds = _get_credentials(settings)
     youtube = build("youtube", "v3", credentials=creds)
     body = {
@@ -155,9 +166,20 @@ def upload(
     video_id = response["id"]
 
     # Upload SRT caption track (best-effort; doesn't block video URL return)
+    primary_lang = (caption_lang or "en").lower()
     if cues:
         srt = _cues_to_srt(cues)
         if srt.strip():
-            _upload_caption(youtube, video_id, srt, lang=caption_lang)
+            _upload_caption(youtube, video_id, srt, lang=primary_lang)
+
+    # Extra translated caption tracks — viewers toggle via YouTube CC menu.
+    if extra_captions:
+        for lang, lang_cues in extra_captions.items():
+            code = (lang or "").lower().strip()
+            if not code or code == primary_lang or not lang_cues:
+                continue
+            srt = _cues_to_srt(lang_cues)
+            if srt.strip():
+                _upload_caption(youtube, video_id, srt, lang=code)
 
     return f"https://youtube.com/shorts/{video_id}"

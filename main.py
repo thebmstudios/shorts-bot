@@ -107,12 +107,29 @@ def main() -> None:
     print(f"   voice duration ~{duration:.1f}s, {len(cues)} cues")
 
     # Optional subtitle translation. Audio stays English; only the on-screen
-    # subtitles and the YouTube caption track switch to the target language.
+    # subtitles and the PRIMARY YouTube caption track switch to the target.
     sub_lang = os.environ.get("SUBTITLE_LANG", "en").strip().lower() or "en"
     if sub_lang != "en" and cues:
-        print(f"[6b/8] Translating subtitles -> {sub_lang}...")
+        print(f"[6b/8] Translating burnt-in subtitles -> {sub_lang}...")
         cues = translate.translate_cues(settings, cues, sub_lang)
     tts.write_subtitles_json(cues, run_dir / "subtitles.json")
+
+    # Multi-language YouTube caption tracks: viewers can toggle CC menu and
+    # see the subs in their own language. Audio stays English; only the SRT
+    # caption tracks attached to the video change. This is the cheapest way
+    # to open the channel to non-English-speaking audiences.
+    extra_captions: dict[str, list[dict]] = {}
+    caption_csv = os.environ.get("CAPTION_LANGUAGES", "").strip()
+    if caption_csv and cues:
+        wanted = [c.strip().lower() for c in caption_csv.split(",") if c.strip()]
+        # Skip the language already in the primary track (avoid duplicate).
+        wanted = [c for c in wanted if c != sub_lang]
+        for lang in wanted:
+            print(f"[6c/8] Translating extra caption track -> {lang}...")
+            try:
+                extra_captions[lang] = translate.translate_cues(settings, cues, lang)
+            except Exception as e:
+                print(f"   warn: skipped {lang} ({e})")
 
     print("[7/8] Fetching topic visuals from Wikipedia...")
     keywords = script.get("b_roll_keywords") or []
@@ -164,6 +181,7 @@ def main() -> None:
         tags,
         cues=cues,
         caption_lang=sub_lang,
+        extra_captions=extra_captions or None,
     )
     print(f"[done] {url}")
     (run_dir / "youtube_url.txt").write_text(url, encoding="utf-8")

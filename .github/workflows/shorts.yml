@@ -38,6 +38,11 @@ jobs:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       TTS_VOICE: en-US-AndrewNeural
       TTS_RATE: "+0%"
+      # Multi-language caption tracks. Audio stays English; viewers toggle CC.
+      # Picked for highest non-US audience value: Latin America (es/pt),
+      # France/Germany/Italy/Korea/Japan/India/Indonesia/Turkey.
+      # Adds ~$5/month at 6 videos/day. Removing a language = ~$0.5/month off.
+      CAPTION_LANGUAGES: "en,es,pt,fr,de,it,ko,ja,hi,id,tr"
       NICHE: history
       LANGUAGE: English
       TARGET_VIEWS: 1000000
