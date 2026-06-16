@@ -95,6 +95,49 @@ FORMAT MENU (12 formats, 4 per category — pick exactly one):
   11. "unexplained-disappearance" — paranormal-tinged vanishings (Dyatlov Pass, Flight 19, Bermuda Triangle, Roanoke, Missing 411, MH370)
   12. "occult-cryptid"          — cryptid sightings, occult / curse / cult events (Mothman, Skinwalker Ranch, Hexham Heads, Tunguska, Heaven's Gate)
 
+HIGH-PRIORITY SUBJECT POOL (S-tier + A-tier viral candidates for US Shorts):
+When the rotation rules above don't force a specific category, you SHOULD draw
+from this curated list. Each subject is a documented case with established
+audience curiosity in the US market. Pick something here unless it conflicts
+with "Recently covered topics" above.
+
+  S-TIER (highest viral expectation — pick first when available):
+    paranormal:    Max Headroom broadcast hijack 1987; Dyatlov Pass incident;
+                   Tic Tac UFO encounter USS Nimitz 2004; Phoenix Lights 1997;
+                   Lead Masks case Brazil 1966; Mary Celeste; Hinterkaifeck
+                   murders 1922
+    real-events:   D.B. Cooper skyjacking 1971; MK-Ultra unhypnotizable subject;
+                   Roanoke Colony disappearance
+    history:       (use A-tier history list below — fewer S-tier history hooks)
+
+  A-TIER (very strong — pick when S-tier is blocked by recent-topic ban):
+    paranormal:    Voynich Manuscript; Somerton Man; Bell Witch; Patomskiy
+                   Crater; Frederick Valentich disappearance 1978; Wow! Signal
+                   1977; Skinwalker Ranch; Enfield poltergeist; Smurl haunting;
+                   Pollock twins reincarnation; Mary King's Close Edinburgh
+    real-events:   Hiroo Onoda 29-year war; Juliane Koepcke 10,000ft fall;
+                   Aron Ralston 127 hours; Ada Blackjack Arctic survival; Hugh
+                   Glass bear attack; Donner Party winter; Tuskegee experiment;
+                   Tylenol murders 1982; Carrington Event 1859; Year Without
+                   Summer 1816; Tunguska event 1908; Halifax Explosion 1917;
+                   Sultana steamboat 1865; Camp Hero / Montauk Project;
+                   Project Sunshine radiation tests; Project A119 nuke the
+                   Moon; Black Dahlia case; Witold Pilecki Auschwitz; Noor
+                   Inayat Khan SOE
+    history:       Sultan Suleiman's execution of Mustafa; Empress Wu Zetian
+                   bronze urn; Mete Han whistling arrows; Battle of Carrhae
+                   molten gold; Vlad Dracula's impaled forest; Genghis Khan's
+                   hidden burial; Emperor Valerian as footstool; Battle of
+                   Manzikert 1071; Antikythera mechanism; Baghdad Battery
+
+SUBJECT-POOL RULES:
+- If a subject above appears in "Recently covered topics", it is banned (per
+  the SUBJECT-LEVEL DEDUPLICATION rules) — do NOT propose it again.
+- Otherwise, prefer this list over inventing new obscure subjects. ~80% of
+  videos should come from S-tier + A-tier until the lists are exhausted.
+- After all of S-tier and A-tier have appeared in recent history, branch out
+  to fresh related cases (the format menu hints have more examples).
+
 DIVERSITY WITHIN A CATEGORY:
 - HISTORY: do NOT default to Rome or Ottoman every time. The recent topic list shows what's been overused — actively pick OTHER regions: China, Russia, Japan, Korea, India, Africa, South America, Persia, pre-Columbian, Vikings, Celts, etc. If the last 4 history videos were all Rome/Byzantine/Ottoman, this one MUST be from a different region.
 - REAL-EVENTS: span 19th-21st century, global. Don't keep returning to WW2 only.
