@@ -26,7 +26,8 @@ import httpx
 
 # FLUX.1-schnell is fast (4 steps) and license-permissive. Quality is good
 # enough for vertical short-form b-roll where motion + caption dominate.
-_HF_URL = "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell"
+# NOTE: HF retired api-inference.huggingface.co in 2025 — use router.* instead.
+_HF_URL = "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell"
 
 # Style suffix appended to every prompt to enforce a consistent look per
 # category. All include "no text, no watermark" because HF FLUX occasionally
