@@ -36,6 +36,10 @@ jobs:
       contents: write  # needed to push updated topic_history.json back to repo
     env:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      # Optional: set HUGGINGFACE_API_KEY secret to enable AI image fallback
+      # when Wikipedia returns too few topic-relevant images. Without it the
+      # pipeline still runs (just uses Wikipedia only).
+      HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
       TTS_VOICE: en-US-AndrewNeural
       TTS_RATE: "+0%"
       # Multi-language caption tracks. Audio stays English; viewers toggle CC.

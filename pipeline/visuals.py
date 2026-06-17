@@ -1,4 +1,7 @@
-"""Fetch topic-relevant images from Wikipedia (free, no API key)."""
+"""Fetch topic-relevant images from Wikipedia (free, no API key).
+Falls back to AI generation (Hugging Face FLUX.1-schnell) when Wikipedia
+returns too few on-topic results AND HUGGINGFACE_API_KEY is configured.
+"""
 from __future__ import annotations
 
 import hashlib
@@ -8,6 +11,8 @@ from pathlib import Path
 from typing import List
 
 import httpx
+
+from . import ai_image
 
 WIKI_API = "https://en.wikipedia.org/w/api.php"
 # Wikipedia User-Agent policy: https://meta.wikimedia.org/wiki/User-Agent_policy
@@ -173,11 +178,17 @@ def fetch_images(
     out_dir: Path,
     min_count: int = 6,
     topic_context: str = "",
+    category: str = "",
 ) -> List[Path]:
     """Fetch one image per keyword. Skips duplicates; tries to reach min_count.
 
     `topic_context` is the overall topic (e.g. "Suleiman the Magnificent siege of Vienna")
     used to bias and re-rank Wikipedia results so generic keywords still pull on-topic pages.
+
+    `category` (history/real-events/paranormal) is used by the AI fallback to
+    pick a visual style preset. Wikipedia is always tried first; AI only fills
+    the gap when Wikipedia returns fewer than min_count on-topic images AND
+    HUGGINGFACE_API_KEY is configured.
     """
     out_dir.mkdir(parents=True, exist_ok=True)
     saved: list[Path] = []
@@ -227,6 +238,32 @@ def fetch_images(
                     break
                 _try(client, kw, min_score=0.15)
                 time.sleep(0.8)
+
+    # Pass 3 fallback: AI image generation. Only if Wikipedia couldn't reach
+    # min_count AND a HF API key is configured. Generates one image per
+    # remaining b-roll subject, styled per category. Silently no-ops when
+    # the API key is missing (so the bot still works without HF).
+    if len(saved) < min_count:
+        deficit = min_count - len(saved)
+        print(f"[visuals] {len(saved)}/{min_count} from Wikipedia; trying AI for {deficit} more")
+        for i, kw in enumerate(keywords):
+            if len(saved) >= min_count:
+                break
+            # Compose the AI subject: keyword + a fragment of topic for grounding.
+            subject = kw
+            if short_ctx and short_ctx.lower() not in kw.lower():
+                subject = f"{kw}, {short_ctx}"
+            name = "ai_" + hashlib.md5(f"{subject}-{i}".encode()).hexdigest()[:10] + ".png"
+            path = out_dir / name
+            result = ai_image.generate_image(subject, path, category=category)
+            if result and _is_valid_image(result):
+                saved.append(result)
+            else:
+                # generate_image either failed or HF key missing -> stop trying
+                # so we don't slow the run down. Without a key, every call no-ops.
+                if not result:
+                    print("[visuals] AI fallback unavailable (no HF key or repeated fail); stopping")
+                    break
     print(f"[visuals] final image count: {len(saved)}")
     return saved
 

@@ -145,6 +145,7 @@ def main() -> None:
         run_dir / "images",
         min_count=6,
         topic_context=short_topic,
+        category=str(chosen_topic.get("category", "")).strip(),
     )
     print(f"   fetched {len(images)} images")
 
