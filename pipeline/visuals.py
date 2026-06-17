@@ -29,25 +29,40 @@ def _tokens(s: str) -> set[str]:
 
 
 def _score_page(page: dict, keyword: str, topic_context: str) -> float:
-    """Higher = more relevant. Combines title overlap with keyword + topic + has-original-image."""
+    """Higher = more relevant. Combines title overlap with keyword + topic + has-original-image.
+
+    HARD GATE: if a topic_context is provided AND the title shares ZERO tokens
+    with BOTH the keyword and the topic, the page is rejected (returns 0.0) —
+    no matter what Wikipedia's search index ranking is. This catches the most
+    common failure mode where a vague keyword pulls in a totally unrelated
+    article (e.g. "television transmitter tower" -> "Tower of Power band").
+    """
     title = page.get("title", "")
     title_toks = _tokens(title)
     kw_toks = _tokens(keyword)
     topic_toks = _tokens(topic_context) if topic_context else set()
     if not title_toks:
         return 0.0
-    kw_overlap = len(title_toks & kw_toks) / max(len(kw_toks), 1)
-    topic_overlap = len(title_toks & topic_toks) / max(len(topic_toks), 1) if topic_toks else 0.0
+    kw_overlap_count = len(title_toks & kw_toks)
+    topic_overlap_count = len(title_toks & topic_toks)
+    # Hard reject: when we have topic context, require at least ONE token from
+    # either the keyword OR the topic to appear in the title. Otherwise it is
+    # almost certainly an unrelated Wikipedia article.
+    if topic_toks and kw_overlap_count == 0 and topic_overlap_count == 0:
+        return 0.0
+    kw_overlap = kw_overlap_count / max(len(kw_toks), 1)
+    topic_overlap = topic_overlap_count / max(len(topic_toks), 1) if topic_toks else 0.0
     # Wikipedia search gives `index` (lower = better hit). Convert to a small bonus.
     idx = page.get("index", 99)
     rank_bonus = max(0.0, 0.3 - 0.05 * idx)
     has_orig = 0.15 if page.get("original", {}).get("source") else 0.0
-    # Heavy weight on direct keyword match; topic context is secondary safety net.
-    return kw_overlap * 1.0 + topic_overlap * 0.4 + rank_bonus + has_orig
+    # Weight topic context higher than before (0.4 -> 0.7) so on-topic results
+    # outrank index-1 hits that happen to share a single keyword token.
+    return kw_overlap * 1.0 + topic_overlap * 0.7 + rank_bonus + has_orig
 
 
 def _search_image(
-    query: str, client: httpx.Client, topic_context: str = "", min_score: float = 0.15
+    query: str, client: httpx.Client, topic_context: str = "", min_score: float = 0.30
 ) -> str | None:
     """Return best image URL for a search query, or None.
 
@@ -197,19 +212,20 @@ def fetch_images(
     with httpx.Client() as client:
         # Pass 1: strict relevance filter — only pages clearly about the keyword/topic.
         for kw in keywords:
-            if _try(client, kw, min_score=0.15):
+            if _try(client, kw, min_score=0.30):
                 if len(saved) >= max(min_count, 10):
                     break
             time.sleep(0.8)  # be polite to Wikimedia
-        # Pass 2 fallback: if first pass didn't find enough, drop the relevance floor
-        # so the video never goes out with zero/very few visuals. Better an okay-ish
-        # image than a black screen.
+        # Pass 2 fallback: relax score floor but KEEP the hard token-overlap gate
+        # in _score_page. Better to ship a video with 3 on-topic images than 8
+        # mostly-wrong ones — wrong images destroy viewer trust faster than a
+        # short visual loop does.
         if len(saved) < 3:
             print(f"[visuals] only {len(saved)} after strict pass; retrying with relaxed scoring")
             for kw in keywords:
                 if len(saved) >= 4:
                     break
-                _try(client, kw, min_score=0.0)
+                _try(client, kw, min_score=0.15)
                 time.sleep(0.8)
     print(f"[visuals] final image count: {len(saved)}")
     return saved
