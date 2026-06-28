@@ -437,6 +437,57 @@ def _build_recent_categories(meta: list[dict[str, str]], window: int = 6) -> str
     return "\n".join(rows)
 
 
+_STOPWORDS = {
+    "the","a","an","of","in","on","at","to","for","by","with","from","and","or",
+    "but","is","was","were","be","been","being","that","this","these","those",
+    "his","her","its","their","they","he","she","it","who","what","when","where",
+    "why","how","than","then","so","not","no","one","two","three","four","five",
+    "six","seven","eight","nine","ten","first","last","year","years","ad","bc",
+}
+
+
+def _named_entities(topic: str) -> set[str]:
+    """Extract proper-noun-like tokens (capitalized) from a topic string.
+
+    Crude but effective: any token starting with uppercase that isn't a stopword
+    is treated as a named entity. Years (4-digit numbers) also counted.
+    """
+    out: set[str] = set()
+    for word in topic.split():
+        w = "".join(c for c in word if c.isalnum() or c == "-")
+        if not w:
+            continue
+        wl = w.lower()
+        if wl in _STOPWORDS:
+            continue
+        # 4-digit years
+        if w.isdigit() and len(w) == 4 and 1000 <= int(w) <= 2100:
+            out.add(w)
+            continue
+        # capitalized tokens (3+ chars)
+        if len(w) >= 3 and w[0].isupper():
+            out.add(wl)
+    return out
+
+
+def _topic_is_duplicate(new_topic: str, recent_topics: list[str], threshold: int = 2) -> str:
+    """Return the matched recent topic if duplicate, else empty string.
+
+    A topic is a duplicate when it shares `threshold`+ named entities with any
+    recent topic. This catches the "same subject, different wording" failure
+    mode that pure string match misses.
+    """
+    new_ents = _named_entities(new_topic)
+    if len(new_ents) < threshold:
+        return ""  # too vague to compare reliably
+    for prev in recent_topics:
+        prev_ents = _named_entities(prev)
+        overlap = new_ents & prev_ents
+        if len(overlap) >= threshold:
+            return prev
+    return ""
+
+
 def choose_topic(settings: Settings, findings: dict[str, Any]) -> dict[str, Any]:
     recent = _load_recent_topics(settings.root, settings.workspace_dir)
     if recent:
@@ -447,17 +498,49 @@ def choose_topic(settings: Settings, findings: dict[str, Any]) -> dict[str, Any]
     recent_categories = _build_recent_categories(meta, window=6)
     recent_arcs = _build_recent_arcs(meta, window=5)
     recent_formats = _build_recent_formats(meta, window=5)
-    return call_json(
-        settings,
-        SYSTEM.format(niche=settings.niche),
-        USER.format(
-            language=settings.language,
-            findings=json.dumps(findings, indent=2),
-            recent=recent_block,
-            recent_categories=recent_categories,
-            recent_arcs=recent_arcs,
-            recent_formats=recent_formats,
-        ),
-        max_tokens=900,
-        temperature=0.95,
-    )
+
+    # Retry loop: if Claude returns a topic that shares 2+ named entities with
+    # any recent topic, reject it and try again (up to 3 times). This catches
+    # the "Tic Tac UFO #1 then Tic Tac UFO #2" failure mode that pure prompt
+    # rules let through. Each retry tells Claude WHICH topic it duplicated so
+    # it can pivot to a different subject.
+    rejected: list[str] = []
+    for attempt in range(3):
+        extra_ban = ""
+        if rejected:
+            extra_ban = (
+                "\n\nADDITIONAL HARD BAN (your previous attempts in this run were"
+                " rejected for duplicating these recent subjects — DO NOT repeat"
+                " any of them or any of their central figures):\n"
+                + "\n".join(f"- {r}" for r in rejected)
+            )
+        result = call_json(
+            settings,
+            SYSTEM.format(niche=settings.niche),
+            USER.format(
+                language=settings.language,
+                findings=json.dumps(findings, indent=2),
+                recent=recent_block + extra_ban,
+                recent_categories=recent_categories,
+                recent_arcs=recent_arcs,
+                recent_formats=recent_formats,
+            ),
+            max_tokens=900,
+            temperature=0.95 + attempt * 0.05,  # nudge variety on retries
+        )
+        new_topic = str(result.get("topic", "")).strip()
+        if not new_topic:
+            return result
+        match = _topic_is_duplicate(new_topic, recent)
+        if not match:
+            return result
+        print(
+            f"[topic] attempt {attempt + 1}: rejected duplicate"
+            f"\n  proposed:  {new_topic[:120]}"
+            f"\n  collides:  {match[:120]}"
+        )
+        rejected.append(new_topic)
+    # Fallback: 3 attempts all duplicated -> accept the last one with a warning.
+    # Better to ship a similar topic than to fail the whole pipeline run.
+    print("[topic] WARN: 3 dedup attempts all collided; accepting last result")
+    return result
