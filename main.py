@@ -116,20 +116,18 @@ def main() -> None:
 
     # Multi-language YouTube caption tracks: viewers can toggle CC menu and
     # see the subs in their own language. Audio stays English; only the SRT
-    # caption tracks attached to the video change. This is the cheapest way
-    # to open the channel to non-English-speaking audiences.
+    # caption tracks attached to the video change.
+    # Cost-optimized: ALL languages translated in ONE Claude (Haiku) call
+    # instead of N sequential calls. ~10x cheaper than the old per-lang path.
     extra_captions: dict[str, list[dict]] = {}
     caption_csv = os.environ.get("CAPTION_LANGUAGES", "").strip()
     if caption_csv and cues:
         wanted = [c.strip().lower() for c in caption_csv.split(",") if c.strip()]
         # Skip the language already in the primary track (avoid duplicate).
         wanted = [c for c in wanted if c != sub_lang]
-        for lang in wanted:
-            print(f"[6c/8] Translating extra caption track -> {lang}...")
-            try:
-                extra_captions[lang] = translate.translate_cues(settings, cues, lang)
-            except Exception as e:
-                print(f"   warn: skipped {lang} ({e})")
+        if wanted:
+            print(f"[6c/8] Translating {len(wanted)} caption tracks in one call -> {','.join(wanted)}...")
+            extra_captions = translate.translate_cues_multi(settings, cues, wanted)
 
     print("[7/8] Fetching topic visuals from Wikipedia...")
     keywords = script.get("b_roll_keywords") or []
