@@ -438,11 +438,27 @@ def _build_recent_categories(meta: list[dict[str, str]], window: int = 6) -> str
 
 
 _STOPWORDS = {
+    # articles + conjunctions + prepositions
     "the","a","an","of","in","on","at","to","for","by","with","from","and","or",
     "but","is","was","were","be","been","being","that","this","these","those",
     "his","her","its","their","they","he","she","it","who","what","when","where",
-    "why","how","than","then","so","not","no","one","two","three","four","five",
-    "six","seven","eight","nine","ten","first","last","year","years","ad","bc",
+    "why","how","than","then","so","not","no","into","under","over","after","before",
+    "above","below","during","while","until","since","through","across","upon",
+    # numbers as words (often capitalized at start of phrase)
+    "one","two","three","four","five","six","seven","eight","nine","ten",
+    "first","second","third","last","year","years","ad","bc",
+    # common nouns that appear capitalized in titles but aren't true entities
+    "after","before","witness","witnesses","encounter","incident","case","mystery",
+    "disappearance","sighting","event","report","photo","photograph","video","tape",
+    "death","murder","murders","killing","attack","crash","fire","accident","crime",
+    "discovery","experiment","story","truth","secret","files","file","record","records",
+    "police","army","navy","government","military","officer","officers","soldier",
+    "soldiers","crew","team","group","family","children","child","man","men","woman",
+    "women","people","person","body","bodies","victim","victims","survivor","survivors",
+    "pilot","pilots","captain","commander","general","king","queen","emperor","empress",
+    "sultan","prince","princess","lord","american","british","russian","chinese",
+    "japanese","german","french","spanish","italian","african","european","asian",
+    "north","south","east","west","upper","lower","new","old",
 }
 
 
@@ -470,7 +486,7 @@ def _named_entities(topic: str) -> set[str]:
     return out
 
 
-def _topic_is_duplicate(new_topic: str, recent_topics: list[str], threshold: int = 2) -> str:
+def _topic_is_duplicate(new_topic: str, recent_topics: list[str], threshold: int = 3) -> str:
     """Return the matched recent topic if duplicate, else empty string.
 
     A topic is a duplicate when it shares `threshold`+ named entities with any
@@ -526,7 +542,8 @@ def choose_topic(settings: Settings, findings: dict[str, Any]) -> dict[str, Any]
                 recent_formats=recent_formats,
             ),
             max_tokens=900,
-            temperature=0.95 + attempt * 0.05,  # nudge variety on retries
+            # Nudge variety on retries but cap at 0.99 (Anthropic accepts 0..1).
+            temperature=min(0.99, 0.92 + attempt * 0.03),
         )
         new_topic = str(result.get("topic", "")).strip()
         if not new_topic:
