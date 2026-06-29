@@ -206,31 +206,32 @@ const Caption: React.FC<{ cue: Cue; frame: number; fps: number }> = ({ cue, fram
 
   return (
     <AbsoluteFill
-      style={{ justifyContent: "flex-end", alignItems: "center", paddingBottom: 220 }}
+      style={{ justifyContent: "flex-end", alignItems: "center", paddingBottom: 280 }}
     >
       <div
         style={{
           transform: `translateY(${translateY}px) scale(${scale})`,
           opacity,
           fontFamily: "Impact, Arial Black, sans-serif",
-          fontSize: 76,
+          fontSize: 56,
           lineHeight: 1.05,
           color: "#fff",
           textAlign: "center",
           textTransform: "uppercase",
-          letterSpacing: 1.5,
-          maxWidth: 920,
-          padding: "20px 32px",
-          background: "rgba(0,0,0,0.62)",
-          borderRadius: 18,
+          letterSpacing: 1.2,
+          maxWidth: 820,
+          padding: "12px 22px",
+          background: "rgba(0,0,0,0.45)",
+          borderRadius: 14,
           textShadow:
-            "3px 3px 0 #000, -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000",
-          border: "3px solid rgba(255,216,74,0.9)",
-          boxShadow: "0 8px 40px rgba(0,0,0,0.72)",
+            "2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000",
+          // Thinner border + softer color so it doesn't dominate the frame.
+          border: "2px solid rgba(255,216,74,0.55)",
+          boxShadow: "0 6px 24px rgba(0,0,0,0.55)",
           display: "flex",
           flexWrap: "wrap",
           justifyContent: "center",
-          gap: "0 18px",
+          gap: "0 14px",
         }}
       >
         {words ? (
@@ -241,8 +242,8 @@ const Caption: React.FC<{ cue: Cue; frame: number; fps: number }> = ({ cue, fram
             //  - upcoming word  : muted white (waiting)
             //  - active word    : bright yellow + slight upscale (popping right now)
             //  - already spoken : full white (read, settled)
-            const color = isActive ? "#FFD84A" : wasSpoken ? "#FFFFFF" : "rgba(255,255,255,0.55)";
-            const wordScale = isActive ? 1.12 : 1;
+            const color = isActive ? "#FFD84A" : wasSpoken ? "#FFFFFF" : "rgba(255,255,255,0.5)";
+            const wordScale = isActive ? 1.15 : 1;  // bigger pop since base font shrunk
             return (
               <span
                 key={i}
@@ -252,8 +253,8 @@ const Caption: React.FC<{ cue: Cue; frame: number; fps: number }> = ({ cue, fram
                   transform: `scale(${wordScale})`,
                   transition: "transform 60ms linear, color 60ms linear",
                   textShadow: isActive
-                    ? "0 0 18px rgba(255,216,74,0.7), 3px 3px 0 #000, -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000"
-                    : "3px 3px 0 #000, -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000",
+                    ? "0 0 14px rgba(255,216,74,0.65), 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000"
+                    : "2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000",
                 }}
               >
                 {w.text}
