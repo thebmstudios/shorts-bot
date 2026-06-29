@@ -71,14 +71,24 @@ DIVERSITY RULE: at least 4 of the 5 templates MUST be represented across the
 10 candidates. No more than 3 candidates from the same template.
 
 HARD BANS (any candidate that violates these is rejected before selection):
-- Contains: died, killed, won, escaped, survived, executed, beheaded, murdered,
-  slaughtered, conquered, destroyed, defeated.
+- Spoiler verbs: died, killed, won, escaped, survived, executed, beheaded,
+  murdered, slaughtered, conquered, destroyed, defeated.
+- YouTube-flag medical/trauma words: hospitalized, wounded, bleeding, blood,
+  corpse, corpses, dead body, bodies, gore, mutilated, raped, slaughter,
+  massacre, dying. These trigger the brand-safety classifier and get the
+  video age-restricted (no Shorts feed, no ad revenue).
 - States the outcome (e.g. "Sultan Killed 7 Doctors Then Died From The 8th"
   is BANNED — spoils the entire story).
 - Gives the famous person's full name AND their famous deed in the same line.
 - Over 50 characters.
 - All caps (Title Case only).
 - Emojis.
+
+SAFE ALTERNATIVES for the same hook intensity:
+- "7 Hospitalized" -> "7 People Couldn't Explain It" / "7 Witnesses, Same Story"
+- "Killed" -> "Vanished" / "Never Returned" / "Last Seen"
+- "Dead body" -> "Missing person" / "Empty bed"
+- "Bodies found" -> "Witnesses found" / "Scene found"
 
 CURIOSITY RULES:
 - Read the title — can you predict the ending? If yes, it's a spoiler. Rewrite.

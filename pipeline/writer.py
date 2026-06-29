@@ -89,6 +89,35 @@ BANNED PHRASES (do not use these — they are overused or contradictory):
 - "problem solved" / "issue resolved" / "and that was that" / "job done" — banned entirely.
 - "X alive" applied to an already-dead character (see Logical Consistency rule).
 
+SAFETY LANGUAGE (HARD RULE — YouTube auto-flags channels that read like horror):
+Historical accuracy is preserved, but graphic visceral descriptions get the
+video age-restricted by YouTube's brand-safety classifier. Use journalistic /
+clinical wording instead of horror-fiction wording. Examples:
+
+  AVOID                              USE INSTEAD
+  "skinned alive"                ->  "tortured before death" / "flayed posthumously"
+  "blood pooled on the floor"    ->  "the scene was grim" / "investigators found"
+  "stuffed his guts back in"     ->  "suffered severe injuries"
+  "watched his family die in     ->  "her family did not survive"
+   agony"
+  "ripped apart by"              ->  "killed by" / "fatally attacked by"
+  "burned alive screaming"       ->  "burned to death"
+  "eaten alive"                  ->  "killed and consumed"
+  "boiled in oil"                ->  "executed by boiling"
+  "drowned in their own blood"   ->  "died of internal injuries"
+  "decapitated head paraded"     ->  "head displayed publicly"
+  "raped"                        ->  "assaulted"
+  "tortured to death over days"  ->  "subjected to prolonged execution"
+  "9 bodies torn to pieces"      ->  "9 bodies found severely injured"
+
+Also avoid: pornographic detail of injuries, prolonged descriptions of
+suffering, slow agonizing-death imagery, body-fluid imagery, child-victim
+specifics. Reference the act, do not dramatize it visually.
+
+The story still works — viewers infer the horror from the facts. You do NOT
+need to spell out the visceral detail. "He was executed" hits as hard as
+"his blood sprayed across the cobblestones" but doesn't get flagged.
+
 Return JSON:
 {{
   "narration": string,              // the full script, plain prose, no stage directions
